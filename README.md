@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cold Case Cluster Finder
+
+A geographic intelligence tool that surfaces unsolved homicide clusters hidden across jurisdictional boundaries.
+
+**Pursuit Fellowship Capstone · March 2026**
+
+## Tech Stack
+- **Frontend:** Next.js 15, TypeScript, Tailwind CSS
+- **Map:** Mapbox GL JS
+- **State Management:** Zustand
+- **Database:** Supabase (PostgreSQL + PostGIS)
+- **Deployment:** Vercel
+
+## Team
+- **Manny** — Backend (data loader, Supabase schema, cluster queries, geocoding)
+- **Jonel** — Frontend (map component, filter UI, cluster visualization, case file panel)
 
 ## Getting Started
-
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/OasisView/cold-case.git
+cd cold-case
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create a `.env.local` file in the root:
+```
+NEXT_PUBLIC_SUPABASE_URL=your_url_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key_here
+NEXT_PUBLIC_MAPBOX_TOKEN=your_token_here
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Then run the dev server:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open http://localhost:3000
 
-## Learn More
+## Data Sources
+- **SHR65_23.csv** — 894,636 records (1976–2023) from Murder Accountability Project
+- **UCR65_23a.sav** — FBI agency-level clearance rates, ORI→FIPS mapping
+- **State_Reporting_Rates_2022.xlsx** — Data confidence badges by state
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Key Rule
+All Supabase queries go through `lib/supabase.ts`. Never import the client directly in components.
