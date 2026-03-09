@@ -1,26 +1,120 @@
 @import "tailwindcss";
 
+/* ── Color Tokens (DESIGN.md) ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0C0C0E;
+  --bg2: #111216;
+  --bg3: #16181D;
+  --border: #1F2430;
+
+  --red: #C8102E;
+  --red-glow: rgba(200, 16, 46, 0.25);
+  --red-dim: rgba(200, 16, 46, 0.12);
+
+  --amber: #E8A020;
+  --amber-dim: rgba(232, 160, 32, 0.12);
+
+  --ice: #F0F2F5;
+  --muted: #5A6070;
+  --muted2: #8A929F;
+
+  --green: #22C55E;
 }
 
+/* ── Tailwind v4 @theme ── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-bg2: var(--bg2);
+  --color-bg3: var(--bg3);
+  --color-border: var(--border);
+
+  --color-red: var(--red);
+  --color-red-glow: var(--red-glow);
+  --color-red-dim: var(--red-dim);
+
+  --color-amber: var(--amber);
+  --color-amber-dim: var(--amber-dim);
+
+  --color-ice: var(--ice);
+  --color-muted: var(--muted);
+  --color-muted2: var(--muted2);
+
+  --color-green: var(--green);
+
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+  --font-body: var(--font-body);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ── Base Styles ── */
+body {
+  background: var(--bg);
+  color: var(--ice);
+  font-family: var(--font-body), sans-serif;
+}
+
+/* ── Scrollbar (DESIGN.md) ── */
+::-webkit-scrollbar {
+  width: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1F2430;
+  border-radius: 2px;
+}
+
+/* ── Animation Keyframes (DESIGN.md) ── */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes pulseRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  70% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes clusterIn {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
