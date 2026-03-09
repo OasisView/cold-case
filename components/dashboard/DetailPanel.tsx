@@ -1,4 +1,273 @@
-// DetailPanel — 300px fixed right panel showing selected cluster details
-export default function DetailPanel() {
-  return <div />;
+// DetailPanel — open right panel with drag handle for resizing, populates when cluster is selected in store.
+"use client";
+
+import { useState, useRef, useEffect, useCallback } from "react";
+import type { Cluster } from "@/lib/types";
+import { useFilterStore } from "@/store/useFilterStore";
+import { CLUSTER_HEAT } from "@/lib/constants";
+
+interface DetailPanelProps {
+  clusters: Cluster[];
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between py-[8px] border-b border-border overflow-hidden">
+      <span
+        className="font-[family-name:var(--font-mono)] text-muted uppercase"
+        style={{ fontSize: "8px", letterSpacing: "2px" }}
+      >
+        {label}
+      </span>
+      <span
+        className="font-[family-name:var(--font-mono)] text-ice"
+        style={{ fontSize: "11px", letterSpacing: "0.5px" }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+export default function DetailPanel({ clusters }: DetailPanelProps) {
+  const [width, setWidth] = useState(340);
+  const [dragging, setDragging] = useState(false);
+  const [handleHovered, setHandleHovered] = useState(false);
+  const dragStart = useRef({ x: 0, width: 340 });
+  const selectedClusterId = useFilterStore((s) => s.selectedClusterId);
+
+  const cluster = clusters.find((c) => c.id === selectedClusterId) ?? null;
+
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      dragStart.current = { x: e.clientX, width };
+      setDragging(true);
+      e.preventDefault();
+    },
+    [width]
+  );
+
+  useEffect(() => {
+    if (!dragging) return;
+
+    function handleMouseMove(e: MouseEvent) {
+      const delta = dragStart.current.x - e.clientX;
+      const newWidth = Math.min(
+        600,
+        Math.max(300, dragStart.current.width + delta)
+      );
+      setWidth(newWidth);
+    }
+
+    function handleMouseUp() {
+      setDragging(false);
+    }
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [dragging]);
+
+  return (
+    <aside
+      className="flex shrink-0 overflow-hidden border-l border-border"
+      style={{
+        width: `${width}px`,
+        userSelect: dragging ? "none" : "auto",
+      }}
+    >
+      {/* Drag handle — 4px strip on left edge with centered pill */}
+      <div
+        onMouseDown={handleMouseDown}
+        onMouseEnter={() => setHandleHovered(true)}
+        onMouseLeave={() => setHandleHovered(false)}
+        className="shrink-0 relative"
+        style={{
+          width: "4px",
+          cursor: "col-resize",
+          background: dragging
+            ? "rgba(200,16,46,0.14)"
+            : handleHovered
+              ? "rgba(200,16,46,0.06)"
+              : "transparent",
+          transition: "background 150ms ease",
+        }}
+      >
+        {/* Pill — centered vertically */}
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "3px",
+            height: "32px",
+            borderRadius: "999px",
+            background:
+              dragging || handleHovered ? "#C8102E" : "#2A2F3D",
+            transition: "background 150ms ease",
+            pointerEvents: "none",
+          }}
+        />
+      </div>
+
+      {/* Panel content */}
+      <div
+        className="flex flex-col flex-1 bg-bg2 overflow-hidden"
+        style={{ minWidth: 0 }}
+      >
+        {!cluster ? (
+          <div className="flex items-center justify-center flex-1">
+            <span
+              className="font-[family-name:var(--font-mono)] text-muted"
+              style={{
+                fontSize: "10px",
+                letterSpacing: "1px",
+                textAlign: "center",
+                padding: "0 24px",
+              }}
+            >
+              Select a cluster to view details
+            </span>
+          </div>
+        ) : (
+          <>
+            {/* Header with red top border */}
+            <div className="border-t-[3px] border-t-red bg-bg3 px-[16px] py-[12px] overflow-hidden shrink-0">
+              <span
+                className="font-[family-name:var(--font-mono)] text-red uppercase"
+                style={{ fontSize: "8px", letterSpacing: "2.5px" }}
+              >
+                Cluster Detail
+              </span>
+              <h2
+                className="font-[family-name:var(--font-display)] text-ice mt-[4px]"
+                style={{
+                  fontSize: "22px",
+                  letterSpacing: "2px",
+                  lineHeight: 1.1,
+                }}
+              >
+                {cluster.name}
+              </h2>
+            </div>
+
+            {/* Stats */}
+            <div className="flex items-center justify-between px-[16px] py-[12px] bg-bg3 border-b border-border overflow-hidden shrink-0">
+              <div className="flex flex-col">
+                <span
+                  className="font-[family-name:var(--font-display)] text-ice"
+                  style={{
+                    fontSize: "36px",
+                    letterSpacing: "1px",
+                    lineHeight: 1,
+                  }}
+                >
+                  {cluster.total_cases.toLocaleString()}
+                </span>
+                <span
+                  className="font-[family-name:var(--font-mono)] text-muted uppercase"
+                  style={{ fontSize: "8px", letterSpacing: "2px" }}
+                >
+                  Total Cases
+                </span>
+              </div>
+              <div className="flex flex-col items-end">
+                <span
+                  className={`font-[family-name:var(--font-display)] ${
+                    cluster.solve_rate <= CLUSTER_HEAT.HOT_MAX_SOLVE_RATE
+                      ? "text-red"
+                      : cluster.solve_rate <= CLUSTER_HEAT.WARM_MAX_SOLVE_RATE
+                        ? "text-amber"
+                        : "text-ice"
+                  }`}
+                  style={{
+                    fontSize: "28px",
+                    letterSpacing: "1px",
+                    lineHeight: 1,
+                  }}
+                >
+                  {Math.round(cluster.solve_rate * 100)}%
+                </span>
+                <span
+                  className="font-[family-name:var(--font-mono)] text-muted uppercase"
+                  style={{ fontSize: "8px", letterSpacing: "2px" }}
+                >
+                  Solve Rate
+                </span>
+              </div>
+            </div>
+
+            {/* Status badge */}
+            <div className="flex items-center gap-[6px] px-[16px] py-[8px] border-b border-border overflow-hidden shrink-0">
+              <div
+                className={`rounded-full ${
+                  cluster.solve_rate <= CLUSTER_HEAT.HOT_MAX_SOLVE_RATE
+                    ? "bg-red"
+                    : cluster.solve_rate <= CLUSTER_HEAT.WARM_MAX_SOLVE_RATE
+                      ? "bg-amber"
+                      : "bg-muted2"
+                }`}
+                style={{ width: "6px", height: "6px" }}
+              />
+              <span
+                className={`font-[family-name:var(--font-mono)] ${
+                  cluster.solve_rate <= CLUSTER_HEAT.HOT_MAX_SOLVE_RATE
+                    ? "text-red"
+                    : cluster.solve_rate <= CLUSTER_HEAT.WARM_MAX_SOLVE_RATE
+                      ? "text-amber"
+                      : "text-muted2"
+                } uppercase`}
+                style={{ fontSize: "9px", letterSpacing: "2px" }}
+              >
+                {cluster.solve_rate <= CLUSTER_HEAT.HOT_MAX_SOLVE_RATE
+                  ? "HOT"
+                  : cluster.solve_rate <= CLUSTER_HEAT.WARM_MAX_SOLVE_RATE
+                    ? "WARM"
+                    : "COLD"}{" "}
+                Cluster
+              </span>
+            </div>
+
+            {/* Detail rows */}
+            <div className="flex flex-col px-[16px] overflow-y-auto flex-1">
+              <DetailRow
+                label="Unsolved"
+                value={`${cluster.unsolved_cases.toLocaleString()} cases`}
+              />
+              <DetailRow
+                label="Jurisdictions"
+                value={String(cluster.jurisdictions)}
+              />
+              <DetailRow label="State" value={cluster.state} />
+              <DetailRow
+                label="Year Range"
+                value={`${cluster.year_start}\u2013${cluster.year_end}`}
+              />
+              <DetailRow label="County FIPS" value={cluster.county_fips} />
+            </div>
+
+            {/* Footer action */}
+            <div className="px-[16px] py-[12px] border-t border-border shrink-0 overflow-hidden">
+              <a
+                href={`/cluster/${cluster.id}`}
+                className="flex items-center justify-center font-[family-name:var(--font-display)] text-ice bg-red uppercase transition-colors hover:bg-red/80"
+                style={{
+                  fontSize: "14px",
+                  letterSpacing: "4px",
+                  padding: "9px 32px",
+                  borderRadius: "2px",
+                }}
+              >
+                Open Case File
+              </a>
+            </div>
+          </>
+        )}
+      </div>
+    </aside>
+  );
 }

@@ -90,3 +90,6 @@ cold-case/
 ├── .env.local        # Git-ignored environment variables
 └── CLAUDE.md         # This file
 ```
+
+## Component Build Order
+- `app/page.tsx` + `components/landing/BullseyeBackground.tsx` — Landing page (Phase 6). Full visual spec is in DESIGN.md under "Landing Page — Full Spec". This is not cosmetic — it is the first screen the audience sees on demo day.

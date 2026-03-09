@@ -129,6 +129,19 @@ export const CLUSTER_HEAT = {
   WARM_MAX_SOLVE_RATE: 0.5, // 33–50% solved = amber/warm
 } as const;
 
+// ── US states for filter dropdown ──
+export const US_STATES: string[] = [
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+  "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia",
+  "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+  "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+  "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
+  "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota",
+  "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island",
+  "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+  "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
+];
+
 // ── Racial solve rate gap by decade (verified, DESIGN.md) ──
 export const RACIAL_SOLVE_GAP = [
   { decade: "1980s", black: 73.0, white: 73.3, gap: 0.3 },

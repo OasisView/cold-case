@@ -21,29 +21,25 @@
   --green: #22C55E;
 }
 
-/* ── Tailwind v4 @theme ── */
+/* ── Tailwind v4 @theme — static values so the compiler can generate utilities ── */
 @theme inline {
-  --color-bg: var(--bg);
-  --color-bg2: var(--bg2);
-  --color-bg3: var(--bg3);
-  --color-border: var(--border);
+  --color-bg: #0C0C0E;
+  --color-bg2: #111216;
+  --color-bg3: #16181D;
+  --color-border: #1F2430;
 
-  --color-red: var(--red);
-  --color-red-glow: var(--red-glow);
-  --color-red-dim: var(--red-dim);
+  --color-red: #C8102E;
+  --color-red-glow: rgba(200, 16, 46, 0.25);
+  --color-red-dim: rgba(200, 16, 46, 0.12);
 
-  --color-amber: var(--amber);
-  --color-amber-dim: var(--amber-dim);
+  --color-amber: #E8A020;
+  --color-amber-dim: rgba(232, 160, 32, 0.12);
 
-  --color-ice: var(--ice);
-  --color-muted: var(--muted);
-  --color-muted2: var(--muted2);
+  --color-ice: #F0F2F5;
+  --color-muted: #5A6070;
+  --color-muted2: #8A929F;
 
-  --color-green: var(--green);
-
-  --font-display: var(--font-display);
-  --font-mono: var(--font-mono);
-  --font-body: var(--font-body);
+  --color-green: #22C55E;
 }
 
 /* ── Base Styles ── */
@@ -63,6 +59,36 @@ body {
 ::-webkit-scrollbar-thumb {
   background: #1F2430;
   border-radius: 2px;
+}
+
+/* ── Date Range Slider Thumbs (amber, DESIGN.md) ── */
+.date-range-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: none;
+  background: transparent;
+  outline: none;
+}
+.date-range-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: all;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #E8A020;
+  border: 2px solid #111216;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+.date-range-thumb::-moz-range-thumb {
+  pointer-events: all;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #E8A020;
+  border: 2px solid #111216;
+  cursor: pointer;
 }
 
 /* ── Animation Keyframes (DESIGN.md) ── */
