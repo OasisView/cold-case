@@ -593,9 +593,12 @@ Tab inactive: color #5A6070, border-bottom 2px solid transparent
 
 ### Case File Nav — back bar only
 ```
+Height: 56px, background #111216, border-bottom 1px solid #1F2430
 ← Back to Dashboard    CLUSTER DEEP DIVE
-Back btn:  IBM Plex Mono, 9px, color #5A6070 → #F0F2F5 on hover
+Back btn:  IBM Plex Mono, 13px, color #F0F2F5, ← arrow 16px
+           Hover: red underline (border-bottom 1px solid #C8102E)
 Eyebrow:   IBM Plex Mono, 9px, letter-spacing 2px, color #C8102E, uppercase
+Click dark background outside card → navigates to /dashboard
 ```
 
 ---
