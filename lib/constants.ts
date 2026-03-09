@@ -100,6 +100,7 @@ export const STATE_RELIABILITY: Record<string, number> = {
   FL: 48,
   IA: 59,
   WA: 92,
+  VA: 100,
 };
 
 // ── Confidence level thresholds ──
@@ -210,3 +211,19 @@ export const RACIAL_SOLVE_GAP = [
   { decade: "2000s", black: 62.7, white: 75.2, gap: 12.5 },
   { decade: "2010s", black: 61.4, white: 79.1, gap: 17.8 },
 ] as const;
+
+// ── Worst-performing jurisdictions (verified, DESIGN.md) ──
+export const WORST_JURISDICTIONS = [
+  { name: "District of Columbia", solveRate: 34.2, cases: 7_108 },
+  { name: "San Mateo, CA", solveRate: 32.9, cases: 283 },
+  { name: "Los Angeles, CA", solveRate: 38.3, cases: 1_113 },
+] as const;
+
+// ── National homicide trend (verified, CLAUDE.md) ──
+export const NATIONAL_TREND = {
+  PEAK_YEAR: 2022,
+  PEAK_COUNT: 20_306,
+  LATEST_YEAR: 2024,
+  LATEST_COUNT: 15_795,
+  DECLINE_PCT: 22,
+} as const;

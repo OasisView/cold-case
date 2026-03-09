@@ -743,6 +743,109 @@ Secondary btn: transparent, border 1px solid #B8B4AC, color #4A4840
 
 ---
 
+## Insights Page (locked — v5)
+
+### Page Layout
+```
+TopNav above, scrollable content below
+Max-width: 1100px, centered, padding 40px 32px 60px
+Eyebrow: "DATA INSIGHTS" — IBM Plex Mono, 9px, letter-spacing 3px, color #C8102E
+Headline: "WHAT THE DATA SEES" — Bebas Neue, 30px, color #F0F2F5
+```
+
+### Finding Cards (2-column grid, gap 20px)
+```
+Card background: #111216
+Card border:     1px solid #1F2430, border-radius 2px
+Card header:     padding 16px 20px, border-bottom 1px solid #1F2430
+Finding label:   IBM Plex Mono, 8px, letter-spacing 2.5px, color #C8102E, uppercase
+Finding title:   Bebas Neue, 22px, letter-spacing 2px, color #F0F2F5
+Card body:       padding 16px 20px
+```
+
+### Finding 01 — Racial Solve Rate Gap
+```
+4 decade rows from RACIAL_SOLVE_GAP constant
+Black bar: #C8102E, White bar: #5A6070
+Gap label: amber #E8A020, format "+Xpp"
+Legend: 12×4px color swatches + IBM Plex Mono 8px labels
+```
+
+### Finding 02 — Jurisdictional Accountability
+```
+3 horizontal bars from WORST_JURISDICTIONS constant
+DC 34.2% (7,108), San Mateo 32.9% (283), LA 38.3% (1,113)
+Bar: red #C8102E on #16181D track, height 20px
+Solve rate label inside bar, case count on right
+```
+
+### Finding 03 — National Trend
+```
+2 comparison bars, proportional heights (max 120px)
+2022 peak: #C8102E, 120px (100%)
+2024 latest: #5A6070, height = 120 × (15795/20306) ≈ 93px (77.8%)
+Decline label: amber #E8A020, "▼ 22%"
+Values from NATIONAL_TREND constant
+```
+
+### Finding 04 — Data Reliability by State
+```
+5-cell grid from STATE_RELIABILITY constant
+MS 24% red, FL 48% red, IA 59% amber, WA 92% green, VA 100% green
+Cell: #16181D background, 1px solid #1F2430 border
+Percentage: Bebas Neue 28px, color matches confidence level
+Label: IBM Plex Mono 7px, LOW/MEDIUM/HIGH
+```
+
+---
+
+## Methodology Page (locked — v5)
+
+### Page Layout
+```
+TopNav above, single scrollable column
+Max-width: 900px, centered, padding 40px 32px 60px
+Eyebrow: "METHODOLOGY" — IBM Plex Mono, 9px, letter-spacing 3px, color #C8102E
+Headline: "HOW IT WORKS" — Bebas Neue, 30px, color #F0F2F5
+```
+
+### Section Cards (3 stacked, gap 24px)
+```
+Card background: #111216
+Card border:     1px solid #1F2430, border-radius 2px
+Section label:   IBM Plex Mono, 8px, letter-spacing 2.5px, color #C8102E, uppercase
+Section title:   Bebas Neue, 22px, letter-spacing 2px, color #F0F2F5
+Body text:       DM Sans, 13px, weight 300, color #8A929F, line-height 1.78
+```
+
+### Section 1 — Algorithm (Cluster Detection)
+```
+Formula block: #16181D background, 1px solid #1F2430 border
+Condition labels: IBM Plex Mono 12px, amber #E8A020
+Condition values: IBM Plex Mono 12px, ice #F0F2F5
+Condition 1: total_cases >= min_cluster_size
+Condition 2: solve_rate <= 0.33
+```
+
+### Section 2 — Data Sources
+```
+2-column grid of source cards
+Card: #16181D background, 1px solid #1F2430 border, padding 16px
+Source name: IBM Plex Mono 12px, ice #F0F2F5
+Record count: IBM Plex Mono 10px, amber #E8A020
+Year range: IBM Plex Mono 10px, muted #5A6070
+Role: DM Sans 12px, weight 300, color #8A929F
+```
+
+### Section 3 — Limitations
+```
+4 bullet points with red #C8102E dot (4px)
+Body: DM Sans 13px, weight 300, color #8A929F, line-height 1.78
+Topics: low-confidence states, 252 unmatched ORIs, Rhode Island typo, solve rate definition
+```
+
+---
+
 ## Reference Files
 
 - `coldcase_mockup_v4.html` — full interactive mockup, all 6 screens
