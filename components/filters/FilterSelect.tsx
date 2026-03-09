@@ -41,11 +41,18 @@ export default function FilterSelect({
     return () => document.removeEventListener("mousedown", handleMouseDown);
   }, [isOpen]);
 
-  // Close on scroll (fixed dropdown would desync from trigger)
+  // Close on scroll outside (fixed dropdown would desync from trigger)
+  // Allow scrolling inside the dropdown list itself
   useEffect(() => {
     if (!isOpen) return;
 
-    function handleScroll() {
+    function handleScroll(e: Event) {
+      if (
+        containerRef.current &&
+        containerRef.current.contains(e.target as Node)
+      ) {
+        return;
+      }
       setIsOpen(false);
     }
 
