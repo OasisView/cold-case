@@ -17,7 +17,7 @@ export default function ClusterStepper() {
         Min Cluster Size
       </label>
       <div
-        className="flex items-center border border-border"
+        className="flex items-center border border-border w-full"
         style={{ borderRadius: "2px" }}
       >
         <button
@@ -33,8 +33,8 @@ export default function ClusterStepper() {
           &minus;
         </button>
         <div
-          className="flex items-center justify-center font-[family-name:var(--font-mono)] text-ice border-x border-border"
-          style={{ width: "36px", height: "28px", fontSize: "12px" }}
+          className="flex flex-1 items-center justify-center font-[family-name:var(--font-mono)] text-ice border-x border-border"
+          style={{ height: "28px", fontSize: "12px" }}
         >
           {minClusterSize}
         </div>
