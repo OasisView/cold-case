@@ -667,8 +667,8 @@ grid-template-columns: 260px 1fr
 
 **Quadrant 2** — Map Canvas, layered bottom to top:
 - Layer A (z:0): Dark gradient base + red glow at cluster regions
-- Layer B (z:1): Grid lines — 48×48px, rgba(31,36,48,0.3)
-- Layer C (z:2): US outline blob, pointer-events: none
+- Layer B (z:1): Grid lines — 48×48px, rgba(31,36,48,0.3) [deferred to Phase 7]
+- Layer C (z:2): US outline blob, pointer-events: none [deferred to Phase 7]
 - Layer D (z:3): Cluster nodes — pointer-events: all
 - Layer E (z:10): Stats bar float top-right
 - Layer F (z:10): Legend + help button float bottom-right
@@ -679,6 +679,20 @@ Background:  rgba(11,13,18,0.90), backdrop-filter: blur(6px)
 Border:      1px solid #1F2430
 Format:      [N] cases · [N unsolved, red] · [N] clusters
 Separator:   1px × 14px vertical rule, color #1F2430
+```
+
+### State Zoom Animation
+```
+Trigger:     State/Region filter change in FilterPanel
+Animation:   map.flyTo, duration 1200ms, essential: true
+Default:     center [-98.5795, 39.8283], zoom 3.5 — full US view
+State view:  STATE_MAP_VIEWS lookup in lib/constants.ts
+Zoom tiers:  Small states — RI, DE, CT, MD, MA, NJ, NH, VT — zoom 7
+             Medium states — most — zoom 6
+             Large states — CA, TX, MT, WY — zoom 5
+             Alaska — zoom 4
+             DC — zoom 11
+Demo moment: Washington [-120.5015, 47.5] zoom 6 — Green River
 ```
 
 ---

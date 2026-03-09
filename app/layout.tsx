@@ -33,9 +33,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <body
-        className={`${bebasNeue.variable} ${ibmPlexMono.variable} ${dmSans.variable} antialiased`}
+        className={`${bebasNeue.variable} ${ibmPlexMono.variable} ${dmSans.variable} antialiased h-full`}
         style={{ minWidth: "1280px" }}
       >
         {children}

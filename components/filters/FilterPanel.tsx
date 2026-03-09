@@ -25,7 +25,7 @@ export default function FilterPanel() {
 
   return (
     <aside
-      className="flex flex-col bg-bg2 border-r border-border overflow-hidden shrink-0"
+      className="flex flex-col bg-bg2 border-r border-border overflow-hidden shrink-0 h-full"
       style={{ width: "260px" }}
     >
       {/* Header */}

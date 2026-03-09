@@ -142,6 +142,67 @@ export const US_STATES: string[] = [
   "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
 ];
 
+// ── State map views for flyTo animation (center [lng, lat] + zoom) ──
+export const STATE_MAP_VIEWS: Record<string, { center: [number, number]; zoom: number }> = {
+  "Alabama":              { center: [-86.9023, 32.3182],   zoom: 6 },
+  "Alaska":               { center: [-153.4937, 64.2008],  zoom: 4 },
+  "Arizona":              { center: [-111.0937, 34.0489],   zoom: 6 },
+  "Arkansas":             { center: [-92.1999, 34.7999],    zoom: 6 },
+  "California":           { center: [-119.4179, 36.7783],   zoom: 5 },
+  "Colorado":             { center: [-105.7821, 39.5501],   zoom: 6 },
+  "Connecticut":          { center: [-72.7554, 41.6032],    zoom: 7 },
+  "Delaware":             { center: [-75.5277, 39.1582],    zoom: 7 },
+  "District of Columbia": { center: [-77.0369, 38.9072],    zoom: 11 },
+  "Florida":              { center: [-81.5158, 27.6648],    zoom: 6 },
+  "Georgia":              { center: [-83.5002, 32.1656],    zoom: 6 },
+  "Hawaii":               { center: [-155.5828, 19.8968],   zoom: 6 },
+  "Idaho":                { center: [-114.7420, 44.0682],   zoom: 6 },
+  "Illinois":             { center: [-89.3985, 40.6331],    zoom: 6 },
+  "Indiana":              { center: [-86.1349, 40.2672],    zoom: 6 },
+  "Iowa":                 { center: [-93.0977, 41.8780],    zoom: 6 },
+  "Kansas":               { center: [-98.4842, 39.0119],    zoom: 6 },
+  "Kentucky":             { center: [-84.2700, 37.8393],    zoom: 6 },
+  "Louisiana":            { center: [-91.9623, 30.9843],    zoom: 6 },
+  "Maine":                { center: [-69.4455, 45.2538],    zoom: 6 },
+  "Maryland":             { center: [-76.6413, 39.0458],    zoom: 7 },
+  "Massachusetts":        { center: [-71.3824, 42.4072],    zoom: 7 },
+  "Michigan":             { center: [-84.5361, 44.3148],    zoom: 6 },
+  "Minnesota":            { center: [-94.6859, 46.7296],    zoom: 6 },
+  "Mississippi":          { center: [-89.3985, 32.3547],    zoom: 6 },
+  "Missouri":             { center: [-91.8318, 37.9643],    zoom: 6 },
+  "Montana":              { center: [-109.6333, 46.8797],   zoom: 5 },
+  "Nebraska":             { center: [-99.9018, 41.4925],    zoom: 6 },
+  "Nevada":               { center: [-116.4194, 38.8026],   zoom: 6 },
+  "New Hampshire":        { center: [-71.5724, 43.1939],    zoom: 7 },
+  "New Jersey":           { center: [-74.4057, 40.0583],    zoom: 7 },
+  "New Mexico":           { center: [-105.8701, 34.5199],   zoom: 6 },
+  "New York":             { center: [-75.0000, 43.0000],    zoom: 6 },
+  "North Carolina":       { center: [-79.0193, 35.7596],    zoom: 6 },
+  "North Dakota":         { center: [-101.0020, 47.5515],   zoom: 6 },
+  "Ohio":                 { center: [-82.9071, 40.4173],    zoom: 6 },
+  "Oklahoma":             { center: [-97.0929, 35.0078],    zoom: 6 },
+  "Oregon":               { center: [-120.5542, 43.8041],   zoom: 6 },
+  "Pennsylvania":         { center: [-77.1945, 41.2033],    zoom: 6 },
+  "Rhode Island":         { center: [-71.4774, 41.5801],    zoom: 7 },
+  "South Carolina":       { center: [-81.1637, 33.8361],    zoom: 6 },
+  "South Dakota":         { center: [-99.9018, 43.9695],    zoom: 6 },
+  "Tennessee":            { center: [-86.5804, 35.5175],    zoom: 6 },
+  "Texas":                { center: [-99.9018, 31.9686],    zoom: 5 },
+  "Utah":                 { center: [-111.0937, 39.3210],   zoom: 6 },
+  "Vermont":              { center: [-72.5778, 44.5588],    zoom: 7 },
+  "Virginia":             { center: [-78.6569, 37.4316],    zoom: 6 },
+  "Washington":           { center: [-120.5015, 47.5000],   zoom: 6 },
+  "West Virginia":        { center: [-80.4549, 38.5976],    zoom: 6 },
+  "Wisconsin":            { center: [-89.6165, 43.7844],    zoom: 6 },
+  "Wyoming":              { center: [-107.2903, 43.0760],   zoom: 5 },
+};
+
+// ── Default US map view (flyTo reset) ──
+export const DEFAULT_MAP_VIEW = {
+  center: [-98.5795, 39.8283] as [number, number],
+  zoom: 3.5,
+} as const;
+
 // ── Racial solve rate gap by decade (verified, DESIGN.md) ──
 export const RACIAL_SOLVE_GAP = [
   { decade: "1980s", black: 73.0, white: 73.3, gap: 0.3 },
