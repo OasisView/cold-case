@@ -7,7 +7,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { Cluster } from "@/lib/types";
 import { useFilterStore } from "@/store/useFilterStore";
-import { CLUSTER_HEAT, STATE_MAP_VIEWS, DEFAULT_MAP_VIEW } from "@/lib/constants";
+import { CLUSTER_HEAT, STATE_BOUNDS, DEFAULT_MAP_VIEW } from "@/lib/constants";
 import StatsBar from "@/components/map/StatsBar";
 import HoverTooltip from "@/components/map/HoverTooltip";
 
@@ -184,6 +184,7 @@ export default function MapCanvas({
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const [tokenMissing, setTokenMissing] = useState(false);
+  const [boundaryReady, setBoundaryReady] = useState(false);
 
   const selectedClusterId = useFilterStore((s) => s.selectedClusterId);
   const setSelectedClusterId = useFilterStore((s) => s.setSelectedClusterId);
@@ -231,6 +232,35 @@ export default function MapCanvas({
 
     map.on("load", () => {
       setMapReady(true);
+
+      // Fetch US state boundaries and add highlight layer
+      fetch(
+        "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json"
+      )
+        .then((res) => res.json())
+        .then((geojson) => {
+          if (!map.getSource("state-boundaries")) {
+            map.addSource("state-boundaries", {
+              type: "geojson",
+              data: geojson,
+            });
+            map.addLayer({
+              id: "state-highlight",
+              type: "line",
+              source: "state-boundaries",
+              paint: {
+                "line-color": "#E8A020",
+                "line-width": 1.5,
+                "line-opacity": 0,
+                "line-opacity-transition": { duration: 600, delay: 0 },
+              },
+            });
+            setBoundaryReady(true);
+          }
+        })
+        .catch(() => {
+          // Boundary data unavailable — feature degrades silently
+        });
     });
 
     mapRef.current = map;
@@ -292,14 +322,19 @@ export default function MapCanvas({
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
 
-    if (stateFilter && STATE_MAP_VIEWS[stateFilter]) {
-      const view = STATE_MAP_VIEWS[stateFilter];
-      mapRef.current.flyTo({
-        center: view.center,
-        zoom: view.zoom,
-        duration: 1200,
-        essential: true,
-      });
+    if (stateFilter && STATE_BOUNDS[stateFilter]) {
+      const bounds = STATE_BOUNDS[stateFilter];
+      mapRef.current.fitBounds(
+        [
+          [bounds[0], bounds[1]],
+          [bounds[2], bounds[3]],
+        ],
+        {
+          padding: { top: 80, bottom: 80, left: 80, right: 80 },
+          duration: 1200,
+          essential: true,
+        }
+      );
     } else {
       mapRef.current.flyTo({
         center: DEFAULT_MAP_VIEW.center,
@@ -309,6 +344,29 @@ export default function MapCanvas({
       });
     }
   }, [stateFilter, mapReady]);
+
+  // Highlight state boundary when state filter changes
+  useEffect(() => {
+    if (!boundaryReady || !mapRef.current) return;
+    const map = mapRef.current;
+
+    if (stateFilter && STATE_BOUNDS[stateFilter]) {
+      // Show boundary for selected state
+      map.setFilter("state-highlight", ["==", ["get", "name"], stateFilter]);
+      map.setPaintProperty("state-highlight", "line-opacity-transition", {
+        duration: 600,
+        delay: 0,
+      });
+      map.setPaintProperty("state-highlight", "line-opacity", 0.5);
+    } else {
+      // Fade out boundary
+      map.setPaintProperty("state-highlight", "line-opacity-transition", {
+        duration: 400,
+        delay: 0,
+      });
+      map.setPaintProperty("state-highlight", "line-opacity", 0);
+    }
+  }, [stateFilter, boundaryReady]);
 
   // Token missing — isolated error block
   if (tokenMissing) {

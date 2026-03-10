@@ -687,15 +687,29 @@ Separator:   1px × 14px vertical rule, color #1F2430
 ### State Zoom Animation
 ```
 Trigger:     State/Region filter change in FilterPanel
-Animation:   map.flyTo, duration 1200ms, essential: true
-Default:     center [-98.5795, 39.8283], zoom 3.5 — full US view
-State view:  STATE_MAP_VIEWS lookup in lib/constants.ts
-Zoom tiers:  Small states — RI, DE, CT, MD, MA, NJ, NH, VT — zoom 7
-             Medium states — most — zoom 6
-             Large states — CA, TX, MT, WY — zoom 5
-             Alaska — zoom 4
-             DC — zoom 11
-Demo moment: Washington [-120.5015, 47.5] zoom 6 — Green River
+Animation:   map.fitBounds with STATE_BOUNDS lookup in lib/constants.ts
+Bounds:      [west, south, east, north] bounding box per state (51 entries)
+Padding:     { top: 80, bottom: 80, left: 80, right: 80 }
+Duration:    1200ms, essential: true
+Default:     flyTo center [-98.5795, 39.8283], zoom 3.5 -- full US view
+Advantage:   fitBounds auto-calculates zoom to fit entire state in viewport
+Demo moment: Washington fitBounds [-124.76, 45.54, -116.92, 49.00] -- Green River
+```
+
+### State Boundary Highlight
+```
+Source:      PublicaMundi US states GeoJSON (fetched on map load)
+Layer id:    state-highlight
+Type:        line
+Paint:
+  line-color:   #E8A020 (amber)
+  line-width:   1.5
+  line-opacity: 0 (default hidden)
+Transition:
+  Fade in:  600ms (opacity 0 -> 0.5) when state filter selected
+  Fade out: 400ms (opacity 0.5 -> 0) when filter reset to All States
+Filter:      ['==', ['get', 'name'], stateFilter] -- matches GeoJSON name property
+Degradation: Fetch failure silently skipped, no error state
 ```
 
 ---
