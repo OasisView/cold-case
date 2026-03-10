@@ -3,7 +3,7 @@
 "use client";
 
 import TopNav from "@/components/layout/TopNav";
-import { KEY_STATS } from "@/lib/constants";
+import { KEY_STATS, EXPANDED_HOMICIDE_SOURCE } from "@/lib/constants";
 
 export default function MethodologyPage() {
   return (
@@ -203,6 +203,12 @@ function DataSourcesSection() {
       records: 51,
       years: "2022",
       role: "State reporting reliability badges. Identifies low-confidence states: MS (24%), FL (48%), IA (59%).",
+    },
+    {
+      name: EXPANDED_HOMICIDE_SOURCE.name,
+      records: EXPANDED_HOMICIDE_SOURCE.records,
+      years: EXPANDED_HOMICIDE_SOURCE.years,
+      role: EXPANDED_HOMICIDE_SOURCE.role,
     },
   ];
 

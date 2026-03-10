@@ -874,12 +874,19 @@ Condition 2: solve_rate <= 0.33
 
 ### Section 2 — Data Sources
 ```
-2-column grid of source cards
+2-column grid of source cards (4 cards total)
 Card: #16181D background, 1px solid #1F2430 border, padding 16px
 Source name: IBM Plex Mono 12px, ice #F0F2F5
 Record count: IBM Plex Mono 10px, amber #E8A020
 Year range: IBM Plex Mono 10px, muted #5A6070
 Role: DM Sans 12px, weight 300, color #8A929F
+
+Sources:
+1. SHR65_23.csv — 894,636 records, 1976–2023
+2. UCR65_23a.sav — 180,298 records, 1965–2023
+3. State_Reporting_Rates_2022.xlsx — 51 records, 2022
+4. expanded-homicide-2024.zip — Aggregate (not case-level), 2020–2024
+   National trend line context for Finding 03 (Insights page)
 ```
 
 ### Section 3 — Limitations

@@ -219,6 +219,14 @@ export const WORST_JURISDICTIONS = [
   { name: "Los Angeles, CA", solveRate: 38.3, cases: 1_113 },
 ] as const;
 
+// ── Expanded homicide context data (national trend line only, not case-level) ──
+export const EXPANDED_HOMICIDE_SOURCE = {
+  name: "expanded-homicide-2024.zip",
+  records: "Aggregate",
+  years: "2020–2024",
+  role: "National trend line context. Used for Finding 03 on the Insights page — 2022 peak (20,306) and 2024 decline (15,795). Does not contain individual case records.",
+} as const;
+
 // ── National homicide trend (verified, CLAUDE.md) ──
 export const NATIONAL_TREND = {
   PEAK_YEAR: 2022,
