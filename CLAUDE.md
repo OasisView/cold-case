@@ -51,9 +51,9 @@ Pursuit Fellowship Capstone — Due March 18, 2026.
 - Other or type unknown → 99
 
 ## Supabase Schema (Target)
-### cases table
+### homicides table
 - id, ori, agency, agency_type, state, year, month
-- solved (boolean), victim_sex, victim_age, victim_race, victim_ethnicity
+- solved (boolean — true when offender_sex !== 'U'), victim_sex, victim_age, victim_race, victim_ethnicity
 - offender_sex, offender_age, offender_race, offender_ethnicity
 - weapon_code (integer), weapon_label, relationship
 - county_fips, msa, circumstance
@@ -62,9 +62,11 @@ Pursuit Fellowship Capstone — Due March 18, 2026.
 ### agencies table
 - ori (primary key), name, type, state, county_fips, lat, lng
 
-### state_confidence table
+### state_reliability table
 - state, agencies_total, agencies_reporting, reporting_pct
 
+## Cluster Threshold
+- Default: 10, min: 5, max: 50, step: 5
 ## Key Demo Patterns (Must Work)
 1. Green River Killer: WA + Female + Strangulation + 1980–2000 → 128 cases, King County = 52
 2. Racial Justice Gap: Black victim solve rate 73% (1980s) → 61.4% (2010s)
