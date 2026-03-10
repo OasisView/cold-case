@@ -398,7 +398,7 @@ Font:           IBM Plex Mono
 Size:           10px
 Letter-spacing: 4px
 Color:          #8A929F (--muted2)
-Text:           "COLD CASE INTELLIGENCE PLATFORM"
+Text:           "COLD-CASE INTELLIGENCE PLATFORM"
 Margin-bottom:  20px
 Animation:      fadeUp, delay 0.1s
 ```
