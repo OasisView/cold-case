@@ -77,7 +77,7 @@ export default function DashboardPage() {
   return (
     <div
       className="flex flex-col h-screen overflow-hidden bg-bg"
-      style={{ minWidth: "1280px" }}
+      style={{ minWidth: "1280px", paddingTop: "64px" }}
     >
       {/* TopNav — isolated block */}
       <TopNav />

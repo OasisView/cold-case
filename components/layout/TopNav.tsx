@@ -18,7 +18,7 @@ export default function TopNav() {
   return (
     <nav
       className="flex items-center justify-between bg-bg2 border-b border-border overflow-hidden shrink-0"
-      style={{ height: "64px" }}
+      style={{ height: "64px", position: "fixed", top: 0, left: 0, right: 0, zIndex: 50 }}
     >
       {/* Left: Logo + Tabs */}
       <div className="flex items-center h-full">

@@ -10,18 +10,18 @@ interface DetailPanelProps {
   clusters: Cluster[];
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
+function DetailRow({ label, value, scale }: { label: string; value: string; scale: number }) {
   return (
-    <div className="flex items-center justify-between py-[8px] border-b border-border overflow-hidden">
+    <div className="flex items-center justify-between py-[8px] border-b border-border">
       <span
         className="font-[family-name:var(--font-mono)] text-muted uppercase"
-        style={{ fontSize: "8px", letterSpacing: "2px" }}
+        style={{ fontSize: `${Math.min(Math.round(9 * scale), 14)}px`, letterSpacing: "2px" }}
       >
         {label}
       </span>
       <span
         className="font-[family-name:var(--font-mono)] text-ice"
-        style={{ fontSize: "11px", letterSpacing: "0.5px" }}
+        style={{ fontSize: `${Math.min(Math.round(11 * scale), 18)}px`, letterSpacing: "0.5px" }}
       >
         {value}
       </span>
@@ -37,6 +37,7 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
   const selectedClusterId = useFilterStore((s) => s.selectedClusterId);
 
   const cluster = clusters.find((c) => c.id === selectedClusterId) ?? null;
+  const scale = width / 340;
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -136,7 +137,7 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
         ) : (
           <>
             {/* Header with red top border */}
-            <div className="border-t-[3px] border-t-red bg-bg3 px-[16px] py-[12px] overflow-hidden shrink-0">
+            <div className="border-t-[3px] border-t-red bg-bg3 px-[16px] py-[12px] shrink-0">
               <span
                 className="font-[family-name:var(--font-mono)] text-red uppercase"
                 style={{ fontSize: "8px", letterSpacing: "2.5px" }}
@@ -146,7 +147,7 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
               <h2
                 className="font-[family-name:var(--font-display)] text-ice mt-[4px]"
                 style={{
-                  fontSize: "22px",
+                  fontSize: `${Math.min(Math.round(22 * scale), 36)}px`,
                   letterSpacing: "2px",
                   lineHeight: 1.1,
                 }}
@@ -156,12 +157,12 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
             </div>
 
             {/* Stats */}
-            <div className="flex items-center justify-between px-[16px] py-[12px] bg-bg3 border-b border-border overflow-hidden shrink-0">
+            <div className="flex items-center justify-between px-[16px] py-[12px] bg-bg3 border-b border-border shrink-0">
               <div className="flex flex-col">
                 <span
                   className="font-[family-name:var(--font-display)] text-ice"
                   style={{
-                    fontSize: "36px",
+                    fontSize: `${Math.min(Math.round(28 * scale), 48)}px`,
                     letterSpacing: "1px",
                     lineHeight: 1,
                   }}
@@ -170,7 +171,7 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
                 </span>
                 <span
                   className="font-[family-name:var(--font-mono)] text-muted uppercase"
-                  style={{ fontSize: "8px", letterSpacing: "2px" }}
+                  style={{ fontSize: `${Math.min(Math.round(8 * scale), 13)}px`, letterSpacing: "2px" }}
                 >
                   Total Cases
                 </span>
@@ -185,7 +186,7 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
                         : "text-ice"
                   }`}
                   style={{
-                    fontSize: "28px",
+                    fontSize: `${Math.min(Math.round(28 * scale), 48)}px`,
                     letterSpacing: "1px",
                     lineHeight: 1,
                   }}
@@ -194,7 +195,7 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
                 </span>
                 <span
                   className="font-[family-name:var(--font-mono)] text-muted uppercase"
-                  style={{ fontSize: "8px", letterSpacing: "2px" }}
+                  style={{ fontSize: `${Math.min(Math.round(8 * scale), 13)}px`, letterSpacing: "2px" }}
                 >
                   Solve Rate
                 </span>
@@ -202,7 +203,7 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
             </div>
 
             {/* Status badge */}
-            <div className="flex items-center gap-[6px] px-[16px] py-[8px] border-b border-border overflow-hidden shrink-0">
+            <div className="flex items-center gap-[6px] px-[16px] py-[8px] border-b border-border shrink-0">
               <div
                 className={`rounded-full ${
                   cluster.solve_rate <= CLUSTER_HEAT.HOT_MAX_SOLVE_RATE
@@ -221,7 +222,7 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
                       ? "text-amber"
                       : "text-muted2"
                 } uppercase`}
-                style={{ fontSize: "9px", letterSpacing: "2px" }}
+                style={{ fontSize: `${Math.min(Math.round(9 * scale), 14)}px`, letterSpacing: "2px" }}
               >
                 {cluster.solve_rate <= CLUSTER_HEAT.HOT_MAX_SOLVE_RATE
                   ? "HOT"
@@ -237,27 +238,31 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
               <DetailRow
                 label="Unsolved"
                 value={`${cluster.unsolved_cases.toLocaleString()} cases`}
+                scale={scale}
               />
               <DetailRow
                 label="Jurisdictions"
                 value={String(cluster.jurisdictions)}
+                scale={scale}
               />
-              <DetailRow label="State" value={cluster.state} />
+              <DetailRow label="State" value={cluster.state} scale={scale} />
               <DetailRow
                 label="Year Range"
                 value={`${cluster.year_start}\u2013${cluster.year_end}`}
+                scale={scale}
               />
-              <DetailRow label="County FIPS" value={cluster.county_fips} />
+              <DetailRow label="County FIPS" value={cluster.county_fips} scale={scale} />
             </div>
 
             {/* Footer action — "OPEN CASE FILE →" with red slide-in hover */}
-            <div className="px-[16px] py-[12px] border-t border-border shrink-0 overflow-hidden">
+            <div className="px-[16px] py-[12px] border-t border-border shrink-0">
               <a
                 href={`/cluster/${cluster.id}`}
                 data-testid="open-case-file-btn"
-                className="flex items-center justify-center font-[family-name:var(--font-display)] uppercase landing-enter-btn"
+                className="flex items-center justify-center font-[family-name:var(--font-display)] uppercase case-file-btn"
                 style={{
-                  fontSize: "13px",
+                  width: "100%",
+                  fontSize: `${Math.min(Math.round(13 * scale), 20)}px`,
                   letterSpacing: "3px",
                   padding: "9px 32px",
                   borderRadius: "2px",

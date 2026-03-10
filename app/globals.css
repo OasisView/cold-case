@@ -165,6 +165,26 @@ body {
   color: #F0F2F5;
 }
 
+/* ── Case File Button — same red slide-in, dark text on hover ── */
+.case-file-btn {
+  background: transparent;
+}
+.case-file-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #C8102E;
+  transform: translateX(-101%);
+  transition: transform 0.25s ease;
+  z-index: 0;
+}
+.case-file-btn:hover::before {
+  transform: translateX(0);
+}
+.case-file-btn:hover {
+  color: #0C0C0E;
+}
+
 /* ── Map Cluster Popup — strip Mapbox defaults ── */
 .cluster-popup .mapboxgl-popup-content {
   background: transparent;

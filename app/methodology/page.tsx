@@ -9,7 +9,7 @@ export default function MethodologyPage() {
   return (
     <div
       className="flex flex-col min-h-screen overflow-hidden"
-      style={{ background: "#0C0C0E", minWidth: "1280px" }}
+      style={{ background: "#0C0C0E", minWidth: "1280px", paddingTop: "64px" }}
     >
       <TopNav />
 

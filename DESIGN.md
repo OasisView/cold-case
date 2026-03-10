@@ -141,6 +141,17 @@ Dashboard right panel: 340px default, drag-resizable (min 300px, max 600px, 4px 
   Hover:             pill #C8102E, strip bg rgba(200,16,46,0.06), cursor col-resize
   Dragging:          pill #C8102E, strip bg rgba(200,16,46,0.14)
   Transition:        150ms ease on pill color and strip background
+  Text scaling:      All text scales with panel width. scale = width / 340.
+                     Cluster name:   base 22px → max 36px
+                     Stat numbers:   base 28px → max 48px
+                     Stat labels:    base 8px  → max 13px
+                     Row labels:     base 9px  → max 14px
+                     Row values:     base 11px → max 18px
+                     Status badge:   base 9px  → max 14px
+                     CTA button:     base 13px → max 20px
+                     Formula: Math.min(Math.round(base * scale), max)
+  CTA button:        "OPEN CASE FILE →", class case-file-btn, red fill slide-in from left,
+                     hover text color #0C0C0E (near-black on red fill), width 100%
 Map canvas:          calc(100vw - 260px)  (fills remaining space — this is the only fluid value allowed)
 Case file card:      800px max-width, centered
 ```
@@ -574,8 +585,12 @@ Bar fills:               1px
 ### Top Nav — all pages except Case File
 ```
 Height:        64px
+Position:      fixed, top: 0, left: 0, right: 0, z-index: 50
 Background:    #111216 (--bg2)
 Border-bottom: 1px solid #1F2430
+
+All pages with TopNav must add padding-top: 64px on the root container
+to prevent content from being hidden behind the fixed nav.
 
 Left side:  Logo (dot 9px + COLD[red]CASE CLUSTER FINDER 18px) + nav tabs
 Right side: Dataset meta + Live Data badge
