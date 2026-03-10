@@ -669,12 +669,12 @@ grid-template-columns: 260px 1fr
 **Quadrant 1** — Filter Panel (left, same as Dashboard)
 
 **Quadrant 2** — Map Canvas, layered bottom to top:
-- Layer A (z:0): Dark gradient base + red glow at cluster regions
-- Layer B (z:1): Grid lines — 48×48px, rgba(31,36,48,0.3) [deferred to Phase 7]
-- Layer C (z:2): US outline blob, pointer-events: none [deferred to Phase 7]
-- Layer D (z:3): Cluster nodes — pointer-events: all
+- Layer A (z:0): Mapbox dark basemap (dark-v11)
+- Layer B (z:1): State boundary highlight (amber line, on state filter select)
 - Layer E (z:10): Stats bar float top-right
-- Layer F (z:10): Legend + help button float bottom-right
+- Layer F (z:10): Reset View button float bottom-right
+
+**Note**: Cluster node markers are not rendered in the MVP map view. The map provides geographic context and state-level exploration. Cluster discovery happens on the Dashboard via ClusterList + DetailPanel. The `ClusterNode` component file is retained for future use when real Supabase data is connected.
 
 ### Stats Bar (top-right float)
 ```
@@ -694,6 +694,22 @@ Duration:    1200ms, essential: true
 Default:     flyTo center [-98.5795, 39.8283], zoom 3.5 -- full US view
 Advantage:   fitBounds auto-calculates zoom to fit entire state in viewport
 Demo moment: Washington fitBounds [-124.76, 45.54, -116.92, 49.00] -- Green River
+```
+
+### Reset View Button (bottom-right float, cluster-node circle)
+```
+Position:    absolute, bottom 48px, right 32px, z-index 10 (above Mapbox attribution)
+Shape:       circle, 52×52px, border-radius 50%
+Outer ring:  background rgba(232,160,32,0.08), border 1px solid rgba(232,160,32,0.25)
+             box-shadow 0 0 18px rgba(232,160,32,0.12)
+Inner circle: 34×34px, border-radius 50%, background rgba(232,160,32,0.35)
+             border 1.5px solid #E8A020
+Label:       "⟳" reset arrow centered in inner circle, IBM Plex Mono 14px, color #E8A020
+Pulse ring:  border 1px solid rgba(232,160,32,0.5), animation pulseRing 2.5s infinite
+Hover:       inner circle brightens to rgba(232,160,32,0.55), outer glow 0 0 28px rgba(232,160,32,0.25)
+On click:    flyTo default US view (center [-98.5795, 39.8283], zoom 3.5, 1200ms)
+             + resets state filter to null (clears amber boundary + dropdown)
+Isolated:    does not affect map canvas layout or any other overlay
 ```
 
 ### State Boundary Highlight
