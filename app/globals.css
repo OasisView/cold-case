@@ -161,3 +161,17 @@ body {
 .landing-enter-btn:hover::before {
   transform: translateX(0);
 }
+.landing-enter-btn:hover {
+  color: #F0F2F5;
+}
+
+/* ── Map Cluster Popup — strip Mapbox defaults ── */
+.cluster-popup .mapboxgl-popup-content {
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  border-radius: 2px;
+}
+.cluster-popup .mapboxgl-popup-tip {
+  border-top-color: #1F2430;
+}

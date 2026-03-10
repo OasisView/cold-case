@@ -248,7 +248,7 @@ describe("DetailPanel", () => {
     useFilterStore.getState().setSelectedClusterId("wa-king");
     render(<DetailPanel clusters={MOCK_CLUSTERS} />);
 
-    const link = screen.getByText("Open Case File");
+    const link = screen.getByTestId("open-case-file-btn");
     expect(link).toHaveAttribute("href", "/cluster/wa-king");
   });
 });

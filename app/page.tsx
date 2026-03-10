@@ -90,7 +90,7 @@ export default function LandingPage() {
             animation: "fadeUp 0.9s ease-out 0.1s both",
           }}
         >
-          Cold-Case Intelligence Platform
+          COLD CASE - INTELLIGENCE PLATFORM
         </span>
 
         {/* Headline */}

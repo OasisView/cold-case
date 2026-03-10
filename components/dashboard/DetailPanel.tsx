@@ -250,19 +250,27 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
               <DetailRow label="County FIPS" value={cluster.county_fips} />
             </div>
 
-            {/* Footer action */}
+            {/* Footer action — "OPEN CASE FILE →" with red slide-in hover */}
             <div className="px-[16px] py-[12px] border-t border-border shrink-0 overflow-hidden">
               <a
                 href={`/cluster/${cluster.id}`}
-                className="flex items-center justify-center font-[family-name:var(--font-display)] text-ice bg-red uppercase transition-colors hover:bg-red/80"
+                data-testid="open-case-file-btn"
+                className="flex items-center justify-center font-[family-name:var(--font-display)] uppercase landing-enter-btn"
                 style={{
-                  fontSize: "14px",
-                  letterSpacing: "4px",
+                  fontSize: "13px",
+                  letterSpacing: "3px",
                   padding: "9px 32px",
                   borderRadius: "2px",
+                  border: "1px solid #C8102E",
+                  color: "#C8102E",
+                  textDecoration: "none",
+                  position: "relative",
+                  overflow: "hidden",
                 }}
               >
-                Open Case File
+                <span style={{ position: "relative", zIndex: 1 }}>
+                  Open Case File →
+                </span>
               </a>
             </div>
           </>

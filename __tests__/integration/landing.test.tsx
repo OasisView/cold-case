@@ -65,7 +65,7 @@ describe("Landing Eyebrow", () => {
 
   it("renders the eyebrow text", () => {
     expect(screen.getByTestId("landing-eyebrow")).toHaveTextContent(
-      "Cold-Case Intelligence Platform"
+      "COLD CASE - INTELLIGENCE PLATFORM"
     );
   });
 });

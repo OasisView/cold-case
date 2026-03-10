@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import TopNav from "@/components/layout/TopNav";
 import FilterPanel from "@/components/filters/FilterPanel";
 import StatBar from "@/components/dashboard/StatBar";
@@ -97,6 +98,30 @@ export default function DashboardPage() {
             loading={loading}
           />
           <ClusterList clusters={clusters} loading={loading} error={error} />
+
+          {/* View on Map CTA — isolated block */}
+          <Link
+            href="/map"
+            data-testid="view-on-map-cta"
+            className="font-[family-name:var(--font-mono)] uppercase shrink-0"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              padding: "12px 16px",
+              fontSize: "11px",
+              letterSpacing: "2px",
+              color: "#5A6070",
+              borderTop: "1px solid #1F2430",
+              textDecoration: "none",
+              transition: "color 150ms ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#F0F2F5")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#5A6070")}
+          >
+            View on Map →
+          </Link>
         </div>
 
         {/* Right: DetailPanel — drag-resizable, default 340px, min 300px, max 600px */}

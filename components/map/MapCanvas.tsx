@@ -182,6 +182,8 @@ export default function MapCanvas({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const popupRef = useRef<mapboxgl.Popup | null>(null);
+  const popupClusterIdRef = useRef<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [tokenMissing, setTokenMissing] = useState(false);
   const [boundaryReady, setBoundaryReady] = useState(false);
@@ -284,10 +286,56 @@ export default function MapCanvas({
       const isSelected = cluster.id === selectedClusterId;
       const el = buildMarkerElement(cluster, isSelected);
 
-      // Click handler
+      // Click handler — toggle popup on same cluster, open on different cluster
       el.addEventListener("click", (e) => {
         e.stopPropagation();
+
+        // If clicking the same cluster that already has an open popup, close it
+        if (popupClusterIdRef.current === cluster.id && popupRef.current) {
+          popupRef.current.remove();
+          popupRef.current = null;
+          popupClusterIdRef.current = null;
+          return;
+        }
+
         setSelectedClusterId(cluster.id);
+
+        // Remove existing popup (different cluster)
+        if (popupRef.current) {
+          popupRef.current.remove();
+          popupRef.current = null;
+        }
+
+        const heat = getHeatLevel(cluster.solve_rate);
+        const accentColor = heat === "hot" ? "#C8102E" : heat === "warm" ? "#E8A020" : "#5A6070";
+
+        const popup = new mapboxgl.Popup({
+          offset: [0, -(getMarkerSize(cluster.total_cases) / 2 + 8)],
+          closeButton: false,
+          className: "cluster-popup",
+          maxWidth: "220px",
+        })
+          .setLngLat([cluster.lng, cluster.lat])
+          .setHTML(`
+            <div style="background:#111216;border:1px solid #1F2430;padding:12px 14px;border-radius:2px;">
+              <div style="font-family:var(--font-mono);font-size:8px;letter-spacing:2.5px;color:${accentColor};text-transform:uppercase;margin-bottom:4px;">
+                Cluster
+              </div>
+              <div style="font-family:var(--font-display);font-size:18px;letter-spacing:2px;color:#F0F2F5;line-height:1.1;margin-bottom:8px;">
+                ${cluster.name}
+              </div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:#8A929F;letter-spacing:1px;margin-bottom:10px;">
+                ${cluster.total_cases.toLocaleString()} cases · ${Math.round(cluster.solve_rate * 100)}% solved
+              </div>
+              <a href="/cluster/${cluster.id}" style="font-family:var(--font-display);font-size:11px;letter-spacing:3px;color:#C8102E;text-decoration:none;text-transform:uppercase;">
+                Open Case File →
+              </a>
+            </div>
+          `)
+          .addTo(mapRef.current!);
+
+        popupRef.current = popup;
+        popupClusterIdRef.current = cluster.id;
       });
 
       // Hover handlers
