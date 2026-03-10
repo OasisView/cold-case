@@ -144,3 +144,20 @@ body {
     opacity: 0.3;
   }
 }
+
+/* ── Landing Page Enter Button — red fill slides in from left ── */
+.landing-enter-btn {
+  background: transparent;
+}
+.landing-enter-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #C8102E;
+  transform: translateX(-101%);
+  transition: transform 0.25s ease;
+  z-index: 0;
+}
+.landing-enter-btn:hover::before {
+  transform: translateX(0);
+}
