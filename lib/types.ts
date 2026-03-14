@@ -81,6 +81,7 @@ export interface ClusterResult {
   totalCases: number;
   totalUnsolved: number;
   error?: string;
+  _debugSample?: string; // TEMP — remove after column name investigation
 }
 
 export interface CaseResult {

@@ -172,6 +172,19 @@ export async function getClusters(
   console.log('[supabase] getClusters called, supabase client:', supabase ? 'initialized' : 'NULL - env vars missing');
   if (supabase) {
     try {
+      // TEMP DIAGNOSTIC — remove after fix
+      const { data: sample, error: sampleError } = await supabase
+        .from("homicides")
+        .select("county_fips, state, victim_sex, weapon_code, year, solved")
+        .limit(3);
+
+      console.log("[supabase] sample rows:", JSON.stringify(sample));
+      console.log("[supabase] sample error:", sampleError?.message);
+
+      const debugSample = sampleError
+        ? `SAMPLE ERROR: ${sampleError.message}`
+        : `SAMPLE: ${JSON.stringify(sample)}`;
+
       const query = supabase
         .from("homicides")
         .select("county_fips, state, solved, lat, lng, weapon_code, victim_sex, year, ori");
@@ -191,7 +204,7 @@ export async function getClusters(
 
       if (error) throw error;
       if (!data || data.length === 0) {
-        return { clusters: [], totalCases: 0, totalUnsolved: 0 };
+        return { clusters: [], totalCases: 0, totalUnsolved: 0, _debugSample: debugSample };
       }
 
       const clusters = groupIntoClusters(
@@ -202,7 +215,7 @@ export async function getClusters(
       const totalCases = clusters.reduce((sum, c) => sum + c.total_cases, 0);
       const totalUnsolved = clusters.reduce((sum, c) => sum + c.unsolved_cases, 0);
 
-      return { clusters, totalCases, totalUnsolved };
+      return { clusters, totalCases, totalUnsolved, _debugSample: debugSample };
     } catch (err) {
       console.warn("[supabase] falling back to mock:", err);
     }

@@ -50,12 +50,13 @@ export default function DashboardPage() {
 
       if (result.error) {
         setError(result.error);
-        setDebugMsg(`[getClusters error] ${result.error}`);
+        setDebugMsg(`[getClusters error] ${result.error} | ${result._debugSample ?? 'no sample'}`);
         setClusters([]);
         setTotalCases(0);
         setTotalUnsolved(0);
       } else {
-        setDebugMsg(`[getClusters OK] ${result.clusters.length} clusters, ${result.totalCases} cases (source: ${result.clusters.length > 0 && result.clusters[0].id.match(/^\d{5}$/) ? 'SUPABASE' : 'MOCK'})`);
+        const src = result.clusters.length > 0 && result.clusters[0].id.match(/^\d{5}$/) ? "SUPABASE" : "MOCK";
+        setDebugMsg(`[getClusters OK] ${result.clusters.length} clusters, ${result.totalCases} cases (${src}) | ${result._debugSample ?? 'no sample'}`);
         setClusters(result.clusters);
         setTotalCases(result.totalCases);
         setTotalUnsolved(result.totalUnsolved);
@@ -84,7 +85,7 @@ export default function DashboardPage() {
     >
       {/* Temporary debug banner — remove before demo */}
       {debugMsg && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#C8102E", color: "#fff", padding: "8px 16px", fontSize: "11px", zIndex: 9999, fontFamily: "monospace" }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#C8102E", color: "#fff", padding: "8px 16px", fontSize: "10px", zIndex: 9999, fontFamily: "monospace", overflowX: "auto", whiteSpace: "nowrap" }}>
           {debugMsg}
         </div>
       )}
