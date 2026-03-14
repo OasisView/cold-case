@@ -3,7 +3,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { KEY_STATS } from "@/lib/constants";
 
 const NAV_TABS = [
   { label: "Dashboard", href: "/dashboard" },
@@ -61,34 +60,6 @@ export default function TopNav() {
         </div>
       </div>
 
-      {/* Right: Dataset meta + Live badge */}
-      <div className="flex items-center gap-[12px] px-[16px]">
-        <span
-          className="font-[family-name:var(--font-mono)] text-muted uppercase"
-          style={{ fontSize: "9px", letterSpacing: "2px" }}
-        >
-          SHR65_23 &middot; {KEY_STATS.TOTAL_RECORDS.toLocaleString()} RECORDS
-          &middot; {KEY_STATS.YEAR_START}&ndash;{KEY_STATS.YEAR_END}
-        </span>
-
-        {/* Live badge */}
-        <div className="flex items-center gap-[6px]">
-          <div
-            className="rounded-full bg-green"
-            style={{
-              width: "6px",
-              height: "6px",
-              animation: "blink 2s ease-in-out infinite",
-            }}
-          />
-          <span
-            className="font-[family-name:var(--font-mono)] text-green uppercase"
-            style={{ fontSize: "9px", letterSpacing: "2px" }}
-          >
-            Live Data
-          </span>
-        </div>
-      </div>
     </nav>
   );
 }
