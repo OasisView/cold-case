@@ -169,6 +169,7 @@ function rowToCase(row: HomicideRow): Case {
 export async function getClusters(
   filters: FilterState
 ): Promise<ClusterResult> {
+  console.log('[supabase] getClusters called, supabase client:', supabase ? 'initialized' : 'NULL - env vars missing');
   if (supabase) {
     try {
       const query = supabase
@@ -186,6 +187,7 @@ export async function getClusters(
       if (filters.victimRace !== "all") query.eq("victim_race", filters.victimRace);
 
       const { data, error } = await query;
+      console.log('[supabase] query result:', { dataLength: data?.length, error: error?.message });
 
       if (error) throw error;
       if (!data || data.length === 0) {
