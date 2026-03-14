@@ -624,13 +624,22 @@ All filters use **dropdowns**, not chips. Applies to both Dashboard and Map page
 
 ### Filter Panel Structure
 ```
-Width:        260px
+Expanded:     260px wide (default)
+Collapsed:    40px wide
+Transition:   width 200ms ease
 Background:   #111216 (--bg2)
 Border-right: 1px solid #1F2430
 
-Header row:  "FILTERS" label (13px, color #F0F2F5) + "RESET ALL" in red (11px)
-Each block:  label + input, separated by 1px border
-Bottom:      "● ADEQUATE REPORTING COVERAGE" green badge, pinned to bottom
+Expanded header: ‹ chevron (14px, #8A929F, hover #F0F2F5) + "FILTERS" label (13px, #F0F2F5) + "RESET ALL" (11px, red)
+Collapsed:       › chevron at top (14px, #8A929F, hover #F0F2F5) + vertical icon strip below
+                 Icons: 📅 date, 📍 state, 👤 sex, ⚔ weapon, ◉ race, ✓ solve, # cluster
+                 Icon font: IBM Plex Mono 10px, active #C8102E, inactive #2A3040
+                 Active = filter value differs from default
+
+Collapse is manual (chevron click only) — never auto-collapses on filter change.
+Center column and DetailPanel flex to fill space when collapsed.
+
+Bottom:      "● ADEQUATE REPORTING COVERAGE" green badge, pinned to bottom (expanded only)
 ```
 
 ### Filter Controls
