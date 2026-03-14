@@ -1,65 +1,204 @@
-import Image from "next/image";
+// Landing page — bullseye background + hero content + "Enter" CTA
+// No TopNav. No redirect. Full viewport, overflow hidden. Phase 6.
+"use client";
 
-export default function Home() {
+import { Suspense, useCallback } from "react";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { KEY_STATS } from "@/lib/constants";
+
+const BullseyeBackground = dynamic(
+  () => import("@/components/landing/BullseyeBackground"),
+  { ssr: false }
+);
+
+export default function LandingPage() {
+  const router = useRouter();
+
+  const handleEnter = useCallback(() => {
+    const audio = new Audio("/sounds/enter.mp3");
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+    setTimeout(() => router.push("/dashboard"), 300);
+  }, [router]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div
+      data-testid="landing-page"
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100vh",
+        overflow: "hidden",
+        background: "#0C0A0A",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {/* Layer 0: Bullseye grid (absolute, inset -60px, z-index 0) */}
+      <Suspense fallback={null}>
+        <BullseyeBackground />
+      </Suspense>
+
+      {/* Layer 1: Radial dark overlay (absolute, inset 0, z-index 1) */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `radial-gradient(ellipse at center,
+            rgba(12,10,10,0.00) 0%,
+            rgba(12,10,10,0.00) 35%,
+            rgba(12,10,10,0.45) 60%,
+            rgba(12,10,10,0.80) 78%,
+            rgba(12,10,10,0.95) 92%
+          )`,
+          pointerEvents: "none",
+          zIndex: 1,
+        }}
+      />
+
+      {/* Layer 2: Center glow — red bloom (absolute, z-index 2) */}
+      <div
+        style={{
+          position: "absolute",
+          width: "900px",
+          height: "600px",
+          background: `radial-gradient(ellipse at center,
+            rgba(180,20,30,0.22) 0%,
+            rgba(140,12,20,0.14) 40%,
+            rgba(80,8,12,0.06) 65%,
+            transparent 80%
+          )`,
+          pointerEvents: "none",
+          zIndex: 2,
+        }}
+      />
+
+      {/* Layer 3: Landing content (relative, z-index 3) */}
+      <div
+        data-testid="landing-content"
+        style={{
+          position: "relative",
+          zIndex: 3,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+        }}
+      >
+        {/* Eyebrow */}
+        <span
+          className="font-[family-name:var(--font-mono)] uppercase"
+          data-testid="landing-eyebrow"
+          style={{
+            fontSize: "10px",
+            letterSpacing: "4px",
+            color: "#8A929F",
+            marginBottom: "20px",
+            animation: "fadeUp 0.9s ease-out 0.1s both",
+          }}
+        >
+          INTELLIGENCE PLATFORM
+        </span>
+
+        {/* Headline */}
+        <h1
+          className="font-[family-name:var(--font-display)]"
+          data-testid="landing-headline"
+          style={{
+            fontSize: "clamp(52px, 8vw, 88px)",
+            lineHeight: 0.95,
+            letterSpacing: "3px",
+            margin: 0,
+            animation: "fadeUp 0.9s ease-out 0.2s both",
+          }}
+        >
+          <span style={{ color: "#F0F2F5" }}>Cold Case</span>
+          <br />
+          <span style={{ color: "#C8102E" }}>Network</span>
+        </h1>
+
+        {/* Tagline */}
+        <p
+          className="font-[family-name:var(--font-body)]"
+          data-testid="landing-tagline"
+          style={{
+            fontSize: "14px",
+            fontWeight: 300,
+            color: "#8A929F",
+            lineHeight: 1.7,
+            marginTop: "24px",
+            letterSpacing: "0.3px",
+            animation: "fadeUp 0.9s ease-out 0.35s both",
+          }}
+        >
+          What the data sees. What detectives missed.
+          <br />
+          The map they never made.
+        </p>
+
+        {/* Stat block */}
+        <div
+          data-testid="landing-stat"
+          style={{
+            marginTop: "36px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            animation: "fadeUp 0.9s ease-out 0.45s both",
+          }}
+        >
+          <span
+            className="font-[family-name:var(--font-display)]"
+            data-testid="landing-stat-number"
+            style={{
+              fontSize: "52px",
+              letterSpacing: "2px",
+              color: "#F0F2F5",
+              lineHeight: 1,
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {KEY_STATS.UNSOLVED_SINCE_1980}
+          </span>
+          <span
+            className="font-[family-name:var(--font-mono)] uppercase"
+            style={{
+              fontSize: "9px",
+              letterSpacing: "3px",
+              color: "#5A6070",
+              marginTop: "8px",
+            }}
           >
-            Documentation
-          </a>
+            Unsolved Homicides Since 1980
+          </span>
         </div>
-      </main>
+
+        {/* Enter button */}
+        <button
+          type="button"
+          onClick={handleEnter}
+          data-testid="landing-enter-btn"
+          className="font-[family-name:var(--font-display)] uppercase landing-enter-btn cursor-pointer"
+          style={{
+            fontSize: "14px",
+            letterSpacing: "4px",
+            padding: "9px 32px",
+            color: "#F0F2F5",
+            background: "transparent",
+            border: "1px solid #C8102E",
+            borderRadius: "2px",
+            textDecoration: "none",
+            marginTop: "44px",
+            position: "relative",
+            overflow: "hidden",
+            display: "inline-block",
+            animation: "fadeUp 0.9s ease-out 0.55s both",
+          }}
+        >
+          <span style={{ position: "relative", zIndex: 1 }}>Enter</span>
+        </button>
+      </div>
     </div>
   );
 }
