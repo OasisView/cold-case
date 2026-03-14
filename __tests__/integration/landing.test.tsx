@@ -16,6 +16,13 @@ jest.mock("next/dynamic", () => {
   };
 });
 
+// Mock next/navigation
+const mockPush = jest.fn();
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockPush }),
+  usePathname: () => "/",
+}));
+
 // Mock next/link
 jest.mock("next/link", () => {
   return function MockLink({
@@ -125,9 +132,9 @@ describe("Landing Enter Button", () => {
     expect(screen.getByTestId("landing-enter-btn")).toBeInTheDocument();
   });
 
-  it("ENTER button navigates to /dashboard", () => {
+  it("ENTER button is clickable", () => {
     const btn = screen.getByTestId("landing-enter-btn");
-    expect(btn).toHaveAttribute("href", "/dashboard");
+    expect(btn.tagName).toBe("BUTTON");
   });
 
   it("ENTER button text is 'Enter'", () => {

@@ -2,9 +2,9 @@
 // No TopNav. No redirect. Full viewport, overflow hidden. Phase 6.
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useCallback } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { KEY_STATS } from "@/lib/constants";
 
 const BullseyeBackground = dynamic(
@@ -13,6 +13,15 @@ const BullseyeBackground = dynamic(
 );
 
 export default function LandingPage() {
+  const router = useRouter();
+
+  const handleEnter = useCallback(() => {
+    const audio = new Audio("/sounds/enter.mp3");
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+    setTimeout(() => router.push("/dashboard"), 300);
+  }, [router]);
+
   return (
     <div
       data-testid="landing-page"
@@ -166,15 +175,17 @@ export default function LandingPage() {
         </div>
 
         {/* Enter button */}
-        <Link
-          href="/dashboard"
+        <button
+          type="button"
+          onClick={handleEnter}
           data-testid="landing-enter-btn"
-          className="font-[family-name:var(--font-display)] uppercase landing-enter-btn"
+          className="font-[family-name:var(--font-display)] uppercase landing-enter-btn cursor-pointer"
           style={{
             fontSize: "14px",
             letterSpacing: "4px",
             padding: "9px 32px",
             color: "#F0F2F5",
+            background: "transparent",
             border: "1px solid #C8102E",
             borderRadius: "2px",
             textDecoration: "none",
@@ -186,7 +197,7 @@ export default function LandingPage() {
           }}
         >
           <span style={{ position: "relative", zIndex: 1 }}>Enter</span>
-        </Link>
+        </button>
       </div>
     </div>
   );
