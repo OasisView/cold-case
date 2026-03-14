@@ -56,6 +56,19 @@ export default function FilterPanel() {
           <DateRangeSlider />
         </div>
 
+        {/* State / Region */}
+        <div className="px-[12px] py-[12px] border-b border-border overflow-hidden">
+          <FilterSelect
+            label="State / Region"
+            value={state ?? "null"}
+            options={[
+              { label: "All States", value: "null" },
+              ...US_STATES.map((s) => ({ label: s, value: s })),
+            ]}
+            onChange={(v) => setStateFilter(v === "null" ? null : v)}
+          />
+        </div>
+
         {/* Victim Sex */}
         <div className="px-[12px] py-[12px] border-b border-border overflow-hidden">
           <FilterSelect
@@ -82,19 +95,6 @@ export default function FilterPanel() {
               value: o.code === null ? "null" : String(o.code),
             }))}
             onChange={(v) => setWeaponType(v === "null" ? null : Number(v))}
-          />
-        </div>
-
-        {/* State / Region */}
-        <div className="px-[12px] py-[12px] border-b border-border overflow-hidden">
-          <FilterSelect
-            label="State / Region"
-            value={state ?? "null"}
-            options={[
-              { label: "All States", value: "null" },
-              ...US_STATES.map((s) => ({ label: s, value: s })),
-            ]}
-            onChange={(v) => setStateFilter(v === "null" ? null : v)}
           />
         </div>
 

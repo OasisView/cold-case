@@ -90,7 +90,7 @@ export default function LandingPage() {
             animation: "fadeUp 0.9s ease-out 0.1s both",
           }}
         >
-          COLD CASE - INTELLIGENCE PLATFORM
+          INTELLIGENCE PLATFORM
         </span>
 
         {/* Headline */}
@@ -105,9 +105,9 @@ export default function LandingPage() {
             animation: "fadeUp 0.9s ease-out 0.2s both",
           }}
         >
-          <span style={{ color: "#F0F2F5" }}>Cold. Clustered.</span>
+          <span style={{ color: "#F0F2F5" }}>Cold Case</span>
           <br />
-          <span style={{ color: "#C8102E" }}>Connected.</span>
+          <span style={{ color: "#C8102E" }}>Network</span>
         </h1>
 
         {/* Tagline */}

@@ -65,7 +65,7 @@ describe("Landing Eyebrow", () => {
 
   it("renders the eyebrow text", () => {
     expect(screen.getByTestId("landing-eyebrow")).toHaveTextContent(
-      "COLD CASE - INTELLIGENCE PLATFORM"
+      "INTELLIGENCE PLATFORM"
     );
   });
 });
@@ -76,10 +76,10 @@ describe("Landing Headline", () => {
     render(<LandingPage />);
   });
 
-  it("renders 'Cold. Clustered.' and 'Connected.'", () => {
+  it("renders 'Cold Case' and 'Network'", () => {
     const headline = screen.getByTestId("landing-headline");
-    expect(headline).toHaveTextContent("Cold. Clustered.");
-    expect(headline).toHaveTextContent("Connected.");
+    expect(headline).toHaveTextContent("Cold Case");
+    expect(headline).toHaveTextContent("Network");
   });
 });
 
