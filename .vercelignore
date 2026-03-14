@@ -1,0 +1,6 @@
+data/
+.venv/
+scripts/
+*.csv
+*.sav
+*.zip
