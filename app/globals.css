@@ -1,26 +1,197 @@
 @import "tailwindcss";
 
+/* ── Color Tokens (DESIGN.md) ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0C0C0E;
+  --bg2: #111216;
+  --bg3: #16181D;
+  --border: #1F2430;
+
+  --red: #C8102E;
+  --red-glow: rgba(200, 16, 46, 0.25);
+  --red-dim: rgba(200, 16, 46, 0.12);
+
+  --amber: #E8A020;
+  --amber-dim: rgba(232, 160, 32, 0.12);
+
+  --ice: #F0F2F5;
+  --muted: #5A6070;
+  --muted2: #8A929F;
+
+  --green: #22C55E;
 }
 
+/* ── Tailwind v4 @theme — static values so the compiler can generate utilities ── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: #0C0C0E;
+  --color-bg2: #111216;
+  --color-bg3: #16181D;
+  --color-border: #1F2430;
+
+  --color-red: #C8102E;
+  --color-red-glow: rgba(200, 16, 46, 0.25);
+  --color-red-dim: rgba(200, 16, 46, 0.12);
+
+  --color-amber: #E8A020;
+  --color-amber-dim: rgba(232, 160, 32, 0.12);
+
+  --color-ice: #F0F2F5;
+  --color-muted: #5A6070;
+  --color-muted2: #8A929F;
+
+  --color-green: #22C55E;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ── Base Styles ── */
+body {
+  background: var(--bg);
+  color: var(--ice);
+  font-family: var(--font-body), sans-serif;
+}
+
+/* ── Scrollbar (DESIGN.md) ── */
+::-webkit-scrollbar {
+  width: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1F2430;
+  border-radius: 2px;
+}
+
+/* ── Date Range Slider Thumbs (amber, DESIGN.md) ── */
+.date-range-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: none;
+  background: transparent;
+  outline: none;
+}
+.date-range-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: all;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #E8A020;
+  border: 2px solid #111216;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+.date-range-thumb::-moz-range-thumb {
+  pointer-events: all;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #E8A020;
+  border: 2px solid #111216;
+  cursor: pointer;
+}
+
+/* ── Animation Keyframes (DESIGN.md) ── */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes pulseRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  70% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes clusterIn {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* ── Landing Page Enter Button — red fill slides in from left ── */
+.landing-enter-btn {
+  background: transparent;
+}
+.landing-enter-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #C8102E;
+  transform: translateX(-101%);
+  transition: transform 0.25s ease;
+  z-index: 0;
+}
+.landing-enter-btn:hover::before {
+  transform: translateX(0);
+}
+.landing-enter-btn:hover {
+  color: #F0F2F5;
+}
+
+/* ── Case File Button — same red slide-in, dark text on hover ── */
+.case-file-btn {
+  background: transparent;
+}
+.case-file-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #C8102E;
+  transform: translateX(-101%);
+  transition: transform 0.25s ease;
+  z-index: 0;
+}
+.case-file-btn:hover::before {
+  transform: translateX(0);
+}
+.case-file-btn:hover {
+  color: #0C0C0E;
+}
+
+/* ── Map Cluster Popup — strip Mapbox defaults ── */
+.cluster-popup .mapboxgl-popup-content {
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  border-radius: 2px;
+}
+.cluster-popup .mapboxgl-popup-tip {
+  border-top-color: #1F2430;
 }
