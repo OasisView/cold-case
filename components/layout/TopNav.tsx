@@ -31,7 +31,7 @@ export default function TopNav() {
             className="font-[family-name:var(--font-display)] text-ice"
             style={{ fontSize: "18px", letterSpacing: "1.5px" }}
           >
-            <span className="text-red">COLD</span>CASE CLUSTER FINDER
+            COLD CASE <span className="text-red">NETWORK</span>
           </span>
         </div>
 
