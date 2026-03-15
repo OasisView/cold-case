@@ -251,7 +251,6 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
                 value={`${cluster.year_start}\u2013${cluster.year_end}`}
                 scale={scale}
               />
-              <DetailRow label="County FIPS" value={cluster.county_fips} scale={scale} />
             </div>
 
             {/* Footer action — "OPEN CASE FILE →" with red slide-in hover */}
