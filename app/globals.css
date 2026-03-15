@@ -185,6 +185,17 @@ body {
   color: #0C0C0E;
 }
 
+/* ── Skeleton Loading ── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+.skeleton {
+  background: #1A1C22;
+  border-radius: 2px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
 /* ── Map Cluster Popup — strip Mapbox defaults ── */
 .cluster-popup .mapboxgl-popup-content {
   background: transparent;

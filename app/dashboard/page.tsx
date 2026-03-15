@@ -124,7 +124,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Right: DetailPanel — drag-resizable, default 340px, min 300px, max 600px */}
-        <DetailPanel clusters={clusters} />
+        <DetailPanel clusters={clusters} loading={loading} />
       </div>
     </div>
   );

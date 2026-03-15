@@ -8,6 +8,7 @@ import { CLUSTER_HEAT } from "@/lib/constants";
 
 interface DetailPanelProps {
   clusters: Cluster[];
+  loading?: boolean;
 }
 
 function DetailRow({ label, value, scale }: { label: string; value: string; scale: number }) {
@@ -29,7 +30,7 @@ function DetailRow({ label, value, scale }: { label: string; value: string; scal
   );
 }
 
-export default function DetailPanel({ clusters }: DetailPanelProps) {
+export default function DetailPanel({ clusters, loading = false }: DetailPanelProps) {
   const [width, setWidth] = useState(340);
   const [dragging, setDragging] = useState(false);
   const [handleHovered, setHandleHovered] = useState(false);
@@ -120,7 +121,35 @@ export default function DetailPanel({ clusters }: DetailPanelProps) {
         className="flex flex-col flex-1 bg-bg2 overflow-hidden"
         style={{ minWidth: 0 }}
       >
-        {!cluster ? (
+        {loading && !cluster ? (
+          <div className="flex flex-col flex-1 overflow-hidden">
+            {/* Skeleton header */}
+            <div className="border-t-[3px] border-t-border bg-bg3 px-[16px] py-[12px] shrink-0">
+              <div className="skeleton" style={{ width: "80px", height: "8px", marginBottom: "8px" }} />
+              <div className="skeleton" style={{ width: "180px", height: "24px" }} />
+            </div>
+            {/* Skeleton stats */}
+            <div className="flex items-center justify-between px-[16px] py-[12px] bg-bg3 border-b border-border shrink-0">
+              <div className="flex flex-col gap-[4px]">
+                <div className="skeleton" style={{ width: "80px", height: "28px" }} />
+                <div className="skeleton" style={{ width: "60px", height: "10px" }} />
+              </div>
+              <div className="flex flex-col items-end gap-[4px]">
+                <div className="skeleton" style={{ width: "80px", height: "28px" }} />
+                <div className="skeleton" style={{ width: "60px", height: "10px" }} />
+              </div>
+            </div>
+            {/* Skeleton data rows */}
+            <div className="flex flex-col px-[16px]">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between py-[8px] border-b border-border">
+                  <div className="skeleton" style={{ width: "60px", height: "10px" }} />
+                  <div className="skeleton" style={{ width: "80px", height: "14px" }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : !cluster ? (
           <div className="flex items-center justify-center flex-1">
             <span
               className="font-[family-name:var(--font-mono)] text-muted"

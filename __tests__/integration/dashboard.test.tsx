@@ -135,7 +135,8 @@ describe("StatBar", () => {
       />
     );
 
-    expect(screen.getByText("LOADING...")).toBeInTheDocument();
+    const skeletons = document.querySelectorAll(".skeleton");
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
   it("renders labels", () => {
@@ -198,7 +199,8 @@ describe("ClusterList", () => {
 
   it("shows loading state", () => {
     render(<ClusterList clusters={[]} loading={true} />);
-    expect(screen.getByText("LOADING CLUSTERS...")).toBeInTheDocument();
+    const skeletons = document.querySelectorAll(".skeleton");
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
   it("clicking a cluster sets selectedClusterId in store", () => {

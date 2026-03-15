@@ -108,13 +108,25 @@ export default function ClusterList({
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-bg overflow-hidden">
-        <span
-          className="font-[family-name:var(--font-mono)] text-muted"
-          style={{ fontSize: "10px", letterSpacing: "2px" }}
+      <div className="flex-1 flex flex-col bg-bg overflow-hidden">
+        <div
+          className="flex items-center justify-between px-[12px] border-b border-border shrink-0"
+          style={{ height: "32px" }}
         >
-          LOADING CLUSTERS...
-        </span>
+          <div className="skeleton" style={{ width: "100px", height: "8px" }} />
+          <div className="skeleton" style={{ width: "50px", height: "8px" }} />
+        </div>
+        <div className="flex-1 overflow-hidden">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between px-[14px] py-[12px] border-b border-border"
+            >
+              <div className="skeleton" style={{ width: "120px", height: "12px" }} />
+              <div className="skeleton" style={{ width: "40px", height: "20px" }} />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

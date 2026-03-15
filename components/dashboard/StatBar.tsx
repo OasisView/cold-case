@@ -51,15 +51,19 @@ export default function StatBar({
   if (loading) {
     return (
       <div
-        className="flex items-center justify-center bg-bg border-b border-border overflow-hidden shrink-0"
+        className="grid grid-cols-4 gap-[8px] px-[12px] bg-bg border-b border-border overflow-hidden shrink-0 items-center"
         style={{ height: "80px" }}
       >
-        <span
-          className="font-[family-name:var(--font-mono)] text-muted"
-          style={{ fontSize: "10px", letterSpacing: "2px" }}
-        >
-          LOADING...
-        </span>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex flex-col gap-[4px] bg-bg3 border border-border overflow-hidden px-[14px] py-[10px]"
+            style={{ borderRadius: "2px" }}
+          >
+            <div className="skeleton" style={{ width: "60px", height: "10px" }} />
+            <div className="skeleton" style={{ width: "40px", height: "28px" }} />
+          </div>
+        ))}
       </div>
     );
   }
