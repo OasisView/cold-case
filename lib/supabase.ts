@@ -192,7 +192,7 @@ export async function getClusters(
     const totalUnsolved = clusters.reduce((s, c) => s + c.unsolved_cases, 0);
     return { clusters, totalCases, totalUnsolved };
   } catch (err) {
-    console.error("[supabase] getClusters RPC failed:", JSON.stringify(err));
+    console.error("[supabase] getClusters RPC failed:", err);
     return { clusters: [], totalCases: 0, totalUnsolved: 0, error: String(err) };
   }
 }
