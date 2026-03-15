@@ -93,14 +93,13 @@ interface ReliabilityRow {
   reporting_pct: number;
 }
 
-/** Group homicide rows by county_fips into Cluster objects.
- *  Rows with NULL county_fips are grouped under "unknown-{state}" to preserve data.
+/** Group homicide rows by state into Cluster objects.
+ *  county_fips is NULL for all rows — state is the primary geographic identifier.
  *  lat/lng fall back to STATE_BOUNDS centers until geocoding provides real coords. */
 function groupIntoClusters(rows: HomicideRow[], minClusterSize: number): Cluster[] {
   const groups = new Map<
     string,
     {
-      county_fips: string;
       state: string;
       total: number;
       unsolved: number;
@@ -111,11 +110,10 @@ function groupIntoClusters(rows: HomicideRow[], minClusterSize: number): Cluster
   >();
 
   for (const row of rows) {
-    const key = row.county_fips ?? `unknown-${row.state ?? "Unknown"}`;
+    const key = row.state ?? "Unknown";
     let group = groups.get(key);
     if (!group) {
       group = {
-        county_fips: row.county_fips ?? key,
         state: row.state,
         total: 0,
         unsolved: 0,
@@ -133,16 +131,16 @@ function groupIntoClusters(rows: HomicideRow[], minClusterSize: number): Cluster
   }
 
   const clusters: Cluster[] = [];
-  for (const [, g] of groups) {
+  for (const [state, g] of groups) {
     if (g.total < minClusterSize) continue;
     const bounds = STATE_BOUNDS[g.state];
     const lat = bounds ? (bounds[1] + bounds[3]) / 2 : 39.5;
     const lng = bounds ? (bounds[0] + bounds[2]) / 2 : -98.35;
     clusters.push({
-      id: g.county_fips,
-      name: `${g.county_fips}, ${g.state}`,
-      county_fips: g.county_fips,
-      state: g.state,
+      id: state,
+      name: state,
+      county_fips: state,
+      state,
       total_cases: g.total,
       unsolved_cases: g.unsolved,
       solve_rate: g.total > 0 ? (g.total - g.unsolved) / g.total : 0,
@@ -264,7 +262,7 @@ export async function getCasesForCluster(
       let query = supabase
         .from("homicides")
         .select("*")
-        .eq("county_fips", clusterId)
+        .eq("state", clusterId)
         .order("year", { ascending: false });
 
       query = applyFilters(query, filters);
