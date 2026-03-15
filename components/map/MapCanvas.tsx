@@ -1,9 +1,9 @@
-// MapCanvas — Mapbox GL JS dark basemap, state boundary highlight, stats bar, reset view
+// MapCanvas — Mapbox GL JS dark basemap, state boundary highlight, cluster markers, stats bar, reset view
 // SSR disabled at page level via next/dynamic. Token from NEXT_PUBLIC_MAPBOX_TOKEN env var.
-// Cluster node markers are not rendered in MVP — cluster discovery is on the dashboard.
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { Cluster } from "@/lib/types";
@@ -25,15 +25,17 @@ export default function MapCanvas({
   totalUnsolved,
   loading,
 }: MapCanvasProps) {
+  const router = useRouter();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const [tokenMissing, setTokenMissing] = useState(false);
   const [boundaryReady, setBoundaryReady] = useState(false);
 
   const setStateFilter = useFilterStore((s) => s.setStateFilter);
 
-  // Hover state — HoverTooltip component stays, nothing triggers it without markers
+  // Hover state — triggered by cluster marker mouseenter/mouseleave
   const [hoveredCluster, setHoveredCluster] = useState<Cluster | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
@@ -167,6 +169,72 @@ export default function MapCanvas({
     }
   }, [stateFilter, boundaryReady]);
 
+  // Render cluster markers on the map
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+
+    // Remove previous markers
+    for (const m of markersRef.current) m.remove();
+    markersRef.current = [];
+
+    for (const cluster of clusters) {
+      // Outer circle container
+      const el = document.createElement("div");
+      el.style.cssText =
+        "width:64px;height:64px;border-radius:50%;background:rgba(200,16,46,0.15);" +
+        "border:1px solid rgba(200,16,46,0.4);display:flex;align-items:center;" +
+        "justify-content:center;cursor:pointer;position:relative;";
+
+      // Inner circle
+      const inner = document.createElement("div");
+      inner.style.cssText =
+        "width:44px;height:44px;border-radius:50%;background:rgba(200,16,46,0.35);" +
+        "border:1.5px solid #C8102E;display:flex;align-items:center;justify-content:center;";
+
+      // Unsolved count label
+      const label = document.createElement("span");
+      label.textContent = String(cluster.unsolved_cases);
+      label.style.cssText =
+        "font-family:var(--font-display),sans-serif;font-size:14px;color:#F0F2F5;" +
+        "line-height:1;letter-spacing:1px;";
+      inner.appendChild(label);
+      el.appendChild(inner);
+
+      // Name label below circle
+      const name = document.createElement("div");
+      name.textContent = cluster.name;
+      name.style.cssText =
+        "position:absolute;top:68px;left:50%;transform:translateX(-50%);" +
+        "font-family:var(--font-mono),monospace;font-size:8px;color:#8A929F;" +
+        "white-space:nowrap;letter-spacing:1px;pointer-events:none;";
+      el.appendChild(name);
+
+      // Click → navigate to case file
+      const clusterId = cluster.id;
+      el.addEventListener("click", () => {
+        router.push(`/cluster/${clusterId}`);
+      });
+
+      // Hover tooltip
+      el.addEventListener("mouseenter", (e) => {
+        setHoveredCluster(cluster);
+        setTooltipPos({ x: e.clientX, y: e.clientY });
+      });
+      el.addEventListener("mousemove", (e) => {
+        setTooltipPos({ x: e.clientX, y: e.clientY });
+      });
+      el.addEventListener("mouseleave", () => {
+        setHoveredCluster(null);
+      });
+
+      const marker = new mapboxgl.Marker({ element: el, anchor: "center" })
+        .setLngLat([cluster.lng, cluster.lat])
+        .addTo(mapRef.current!);
+
+      markersRef.current.push(marker);
+    }
+  }, [clusters, mapReady, router]);
+
   // Token missing — isolated error block
   if (tokenMissing) {
     return (
@@ -212,7 +280,7 @@ export default function MapCanvas({
         loading={loading}
       />
 
-      {/* Hover tooltip — follows cursor, nothing triggers it without markers */}
+      {/* Hover tooltip — follows cursor on cluster marker hover */}
       <HoverTooltip
         cluster={hoveredCluster}
         x={tooltipPos.x}
