@@ -26,8 +26,6 @@ export default function DashboardPage() {
   const [totalUnsolved, setTotalUnsolved] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
-  const [debugMsg, setDebugMsg] = useState("");
-
   // Fetch clusters when filters change
   useEffect(() => {
     let cancelled = false;
@@ -50,12 +48,10 @@ export default function DashboardPage() {
 
       if (result.error) {
         setError(result.error);
-        setDebugMsg(`[getClusters error] ${result.error}`);
         setClusters([]);
         setTotalCases(0);
         setTotalUnsolved(0);
       } else {
-        setDebugMsg(`[debug] clusters loaded: ${result.clusters.length}`);
         setClusters(result.clusters);
         setTotalCases(result.totalCases);
         setTotalUnsolved(result.totalUnsolved);
@@ -82,13 +78,6 @@ export default function DashboardPage() {
       className="flex flex-col h-screen overflow-hidden bg-bg"
       style={{ minWidth: "1280px", paddingTop: "64px" }}
     >
-      {/* Temporary debug banner — remove before demo */}
-      {debugMsg && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#C8102E", color: "#fff", padding: "8px 16px", fontSize: "10px", zIndex: 9999, fontFamily: "monospace", overflowX: "auto", whiteSpace: "nowrap" }}>
-          {debugMsg}
-        </div>
-      )}
-
       {/* TopNav — isolated block */}
       <TopNav />
 

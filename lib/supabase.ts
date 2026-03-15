@@ -135,65 +135,66 @@ interface StateClusterRow {
 export async function getClusters(
   filters: FilterState
 ): Promise<ClusterResult> {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase.rpc("get_state_clusters", {
-        p_year_start:  filters.dateRange[0],
-        p_year_end:    filters.dateRange[1],
-        p_victim_sex:  filters.victimSex !== "all" ? filters.victimSex : null,
-        p_weapon_code: filters.weaponType ?? null,
-        p_state:       filters.state ?? null,
-        p_victim_race: filters.victimRace !== "all"
-          ? (RACE_MAP[filters.victimRace] ?? filters.victimRace)
-          : null,
-        p_solved:      filters.solveStatus === "solved"   ? true
-                     : filters.solveStatus === "unsolved" ? false
-                     : null,
-      });
-
-      if (error) throw error;
-      if (!data || data.length === 0) {
-        return { clusters: [], totalCases: 0, totalUnsolved: 0 };
-      }
-
-      const clusters: Cluster[] = (data as StateClusterRow[])
-        .filter((r) => r.total_cases >= filters.minClusterSize)
-        .map((r) => {
-          const bounds = STATE_BOUNDS[r.state];
-          return {
-            id:             r.state,
-            name:           r.state,
-            county_fips:    r.state,
-            state:          r.state,
-            total_cases:    Number(r.total_cases),
-            unsolved_cases: Number(r.unsolved_cases),
-            solve_rate:     r.total_cases > 0
-              ? (r.total_cases - r.unsolved_cases) / r.total_cases
-              : 0,
-            lat:  bounds ? (bounds[1] + bounds[3]) / 2 : 39.5,
-            lng:  bounds ? (bounds[0] + bounds[2]) / 2 : -98.35,
-            year_start:   r.year_start,
-            year_end:     r.year_end,
-            jurisdictions: Number(r.jurisdictions),
-          };
-        })
-        .sort((a, b) => b.unsolved_cases - a.unsolved_cases);
-
-      const totalCases    = clusters.reduce((s, c) => s + c.total_cases, 0);
-      const totalUnsolved = clusters.reduce((s, c) => s + c.unsolved_cases, 0);
-      return { clusters, totalCases, totalUnsolved };
-    } catch (err) {
-      console.warn("[supabase] getClusters falling back to mock:", err);
-    }
+  // No Supabase client — serve mock data for local dev
+  if (!supabase) {
+    let filtered = [...MOCK_CLUSTERS];
+    if (filters.state !== null) filtered = filtered.filter((c) => c.state === filters.state);
+    filtered = filtered.filter((c) => c.total_cases >= filters.minClusterSize);
+    const totalCases    = filtered.reduce((s, c) => s + c.total_cases, 0);
+    const totalUnsolved = filtered.reduce((s, c) => s + c.unsolved_cases, 0);
+    return { clusters: filtered, totalCases, totalUnsolved };
   }
 
-  // Fallback to mock data
-  let filtered = [...MOCK_CLUSTERS];
-  if (filters.state !== null) filtered = filtered.filter((c) => c.state === filters.state);
-  filtered = filtered.filter((c) => c.total_cases >= filters.minClusterSize);
-  const totalCases    = filtered.reduce((s, c) => s + c.total_cases, 0);
-  const totalUnsolved = filtered.reduce((s, c) => s + c.unsolved_cases, 0);
-  return { clusters: filtered, totalCases, totalUnsolved };
+  // Supabase is initialized — real RPC path
+  try {
+    const { data, error } = await supabase.rpc("get_state_clusters", {
+      p_year_start:  filters.dateRange[0],
+      p_year_end:    filters.dateRange[1],
+      p_victim_sex:  filters.victimSex !== "all" ? filters.victimSex : null,
+      p_weapon_code: filters.weaponType ?? null,
+      p_state:       filters.state ?? null,
+      p_victim_race: filters.victimRace !== "all"
+        ? (RACE_MAP[filters.victimRace] ?? filters.victimRace)
+        : null,
+      p_solved:      filters.solveStatus === "solved"   ? true
+                   : filters.solveStatus === "unsolved" ? false
+                   : null,
+    });
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      return { clusters: [], totalCases: 0, totalUnsolved: 0 };
+    }
+
+    const clusters: Cluster[] = (data as StateClusterRow[])
+      .map((r) => {
+        const bounds = STATE_BOUNDS[r.state];
+        return {
+          id:             r.state,
+          name:           r.state,
+          county_fips:    r.state,
+          state:          r.state,
+          total_cases:    Number(r.total_cases),
+          unsolved_cases: Number(r.unsolved_cases),
+          solve_rate:     r.total_cases > 0
+            ? (r.total_cases - r.unsolved_cases) / r.total_cases
+            : 0,
+          lat:  bounds ? (bounds[1] + bounds[3]) / 2 : 39.5,
+          lng:  bounds ? (bounds[0] + bounds[2]) / 2 : -98.35,
+          year_start:   r.year_start,
+          year_end:     r.year_end,
+          jurisdictions: Number(r.jurisdictions),
+        };
+      })
+      .sort((a, b) => b.unsolved_cases - a.unsolved_cases);
+
+    const totalCases    = clusters.reduce((s, c) => s + c.total_cases, 0);
+    const totalUnsolved = clusters.reduce((s, c) => s + c.unsolved_cases, 0);
+    return { clusters, totalCases, totalUnsolved };
+  } catch (err) {
+    console.error("[supabase] getClusters RPC failed:", err);
+    return { clusters: [], totalCases: 0, totalUnsolved: 0, error: String(err) };
+  }
 }
 
 /** Get a single cluster by id (county_fips or mock id) */
