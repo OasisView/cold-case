@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getClusterById, getCasesForCluster } from "@/lib/supabase";
 import type { Cluster, Case } from "@/lib/types";
+import { DEFAULT_FILTERS } from "@/lib/constants";
 import BackNav from "@/components/layout/BackNav";
 import CaseFileDoc from "@/components/casefile/CaseFileDoc";
 
@@ -27,8 +28,8 @@ export default function CaseFilePage() {
       setError(null);
 
       const [clusterResult, caseResult] = await Promise.all([
-        getClusterById(id),
-        getCasesForCluster(id),
+        getClusterById(id, DEFAULT_FILTERS),
+        getCasesForCluster(id, DEFAULT_FILTERS),
       ]);
 
       if (cancelled) return;

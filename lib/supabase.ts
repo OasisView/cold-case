@@ -1,5 +1,4 @@
 // ALL Supabase queries live here — never import the client directly in components
-// Each function: try real Supabase → on error, console.warn + fall back to mock data
 
 import { createClient } from "@supabase/supabase-js";
 import type {
@@ -10,45 +9,66 @@ import type {
   Case,
   ReliabilityBadge,
 } from "@/lib/types";
-import { getConfidenceLevel } from "@/lib/constants";
-import { MOCK_CLUSTERS, MOCK_CASES, MOCK_STATE_RELIABILITY } from "@/lib/mock-data";
+import { getConfidenceLevel, STATE_BOUNDS, DEFAULT_FILTERS } from "@/lib/constants";
+import {
+  MOCK_CLUSTERS,
+  MOCK_CASES,
+  MOCK_STATE_RELIABILITY,
+} from "@/lib/mock-data";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
-const supabase =
+
+export const supabase =
   supabaseUrl && supabaseAnonKey
     ? createClient(supabaseUrl, supabaseAnonKey)
     : null;
 
-// ── Helpers ──
+// ── Internal helpers ──
 
-/** Filter mock clusters by state and minimum cluster size */
-function matchesFilters(cluster: Cluster, filters: FilterState): boolean {
-  if (filters.state !== null && cluster.state !== filters.state) {
-    return false;
+/** Map FilterState.victimRace UI values to SHR database values */
+const RACE_MAP: Record<string, string> = {
+  White: "White",
+  Black: "Black",
+  "Asian-PI": "Asian or Pacific Islander",
+  "Native American": "American Indian or Alaskan Native",
+};
+
+/** Apply all active FilterState fields to a homicides query */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyFilters(query: any, filters: FilterState): any {
+  query = query
+    .gte("year", filters.dateRange[0])
+    .lte("year", filters.dateRange[1]);
+
+  if (filters.state !== null) query = query.eq("state", filters.state);
+  // DB stores "F"/"M" (raw SHR values)
+  if (filters.victimSex !== "all") {
+    query = query.eq("victim_sex", filters.victimSex === "Female" ? "F" : "M");
   }
-  if (cluster.total_cases < filters.minClusterSize) {
-    return false;
+  if (filters.weaponType !== null) query = query.eq("weapon_code", filters.weaponType);
+  if (filters.victimRace !== "all") {
+    const dbRace = RACE_MAP[filters.victimRace] ?? filters.victimRace;
+    query = query.eq("victim_race", dbRace);
   }
-  return true;
+  if (filters.solveStatus === "unsolved") query = query.eq("solved", false);
+  if (filters.solveStatus === "solved") query = query.eq("solved", true);
+
+  return query;
 }
 
 // ── DB row types (raw shape from Supabase) ──
 
 interface HomicideRow {
-  county_fips: string | null;
-  state: string;
-  solved: boolean;
-  lat: number | null;
-  lng: number | null;
-  weapon_code: number | null;
-  victim_sex: string | null;
-  year: number;
   id: string;
   ori: string;
   agency: string;
   agency_type: string;
+  state: string;
+  year: number;
   month: number;
+  solved: boolean;
+  victim_sex: string | null;
   victim_age: number;
   victim_race: string;
   victim_ethnicity: string;
@@ -56,10 +76,14 @@ interface HomicideRow {
   offender_age: number;
   offender_race: string;
   offender_ethnicity: string;
+  weapon_code: number | null;
   weapon_label: string;
   relationship: string;
+  county_fips: string | null;
   msa: string;
   circumstance: string;
+  lat: number | null;
+  lng: number | null;
 }
 
 interface ReliabilityRow {
@@ -69,16 +93,17 @@ interface ReliabilityRow {
   reporting_pct: number;
 }
 
-/** Group homicide rows by county_fips into Cluster objects */
+/** Group homicide rows by county_fips into Cluster objects.
+ *  Rows with NULL county_fips are grouped under "unknown-{state}" to preserve data.
+ *  lat/lng fall back to STATE_BOUNDS centers until geocoding provides real coords. */
 function groupIntoClusters(rows: HomicideRow[], minClusterSize: number): Cluster[] {
   const groups = new Map<
     string,
     {
+      county_fips: string;
       state: string;
       total: number;
       unsolved: number;
-      lat: number | null;
-      lng: number | null;
       yearMin: number;
       yearMax: number;
       oris: Set<string>;
@@ -86,16 +111,14 @@ function groupIntoClusters(rows: HomicideRow[], minClusterSize: number): Cluster
   >();
 
   for (const row of rows) {
-    if (!row.county_fips) continue;
-    const key = row.county_fips;
+    const key = row.county_fips ?? `unknown-${row.state ?? "Unknown"}`;
     let group = groups.get(key);
     if (!group) {
       group = {
+        county_fips: row.county_fips ?? key,
         state: row.state,
         total: 0,
         unsolved: 0,
-        lat: row.lat,
-        lng: row.lng,
         yearMin: row.year,
         yearMax: row.year,
         oris: new Set<string>(),
@@ -104,26 +127,27 @@ function groupIntoClusters(rows: HomicideRow[], minClusterSize: number): Cluster
     }
     group.total++;
     if (!row.solved) group.unsolved++;
-    if (row.lat !== null && group.lat === null) group.lat = row.lat;
-    if (row.lng !== null && group.lng === null) group.lng = row.lng;
     if (row.year < group.yearMin) group.yearMin = row.year;
     if (row.year > group.yearMax) group.yearMax = row.year;
     if (row.ori) group.oris.add(row.ori);
   }
 
   const clusters: Cluster[] = [];
-  for (const [fips, g] of groups) {
+  for (const [, g] of groups) {
     if (g.total < minClusterSize) continue;
+    const bounds = STATE_BOUNDS[g.state];
+    const lat = bounds ? (bounds[1] + bounds[3]) / 2 : 39.5;
+    const lng = bounds ? (bounds[0] + bounds[2]) / 2 : -98.35;
     clusters.push({
-      id: fips,
-      name: fips,
-      county_fips: fips,
+      id: g.county_fips,
+      name: `${g.county_fips}, ${g.state}`,
+      county_fips: g.county_fips,
       state: g.state,
       total_cases: g.total,
       unsolved_cases: g.unsolved,
       solve_rate: g.total > 0 ? (g.total - g.unsolved) / g.total : 0,
-      lat: g.lat ?? 0,
-      lng: g.lng ?? 0,
+      lat,
+      lng,
       year_start: g.yearMin,
       year_end: g.yearMax,
       jurisdictions: g.oris.size,
@@ -169,97 +193,60 @@ function rowToCase(row: HomicideRow): Case {
 export async function getClusters(
   filters: FilterState
 ): Promise<ClusterResult> {
-  console.log('[supabase] getClusters called, supabase client:', supabase ? 'initialized' : 'NULL - env vars missing');
   if (supabase) {
     try {
-      // TEMP DIAGNOSTIC — remove after fix
-      const { data: sample, error: sampleError } = await supabase
+      let query = supabase
         .from("homicides")
-        .select("county_fips, state, victim_sex, weapon_code, year, solved")
-        .limit(3);
+        .select("state, solved, lat, lng, year, ori, county_fips");
 
-      console.log("[supabase] sample rows:", JSON.stringify(sample));
-      console.log("[supabase] sample error:", sampleError?.message);
-
-      const debugSample = sampleError
-        ? `SAMPLE ERROR: ${sampleError.message}`
-        : `SAMPLE: ${JSON.stringify(sample)}`;
-
-      const query = supabase
-        .from("homicides")
-        .select("county_fips, state, solved, lat, lng, weapon_code, victim_sex, year, ori");
-
-      if (filters.state !== null) query.eq("state", filters.state);
-      if (filters.victimSex !== "all") {
-        query.eq("victim_sex", filters.victimSex === "Female" ? "F" : "M");
-      }
-      if (filters.weaponType !== null) query.eq("weapon_code", filters.weaponType);
-      query.gte("year", filters.dateRange[0]).lte("year", filters.dateRange[1]);
-      if (filters.solveStatus === "unsolved") query.eq("solved", false);
-      if (filters.solveStatus === "solved") query.eq("solved", true);
-      if (filters.victimRace !== "all") query.eq("victim_race", filters.victimRace);
+      query = applyFilters(query, filters);
 
       const { data, error } = await query;
-      console.log('[supabase] query result:', { dataLength: data?.length, error: error?.message });
-
       if (error) throw error;
       if (!data || data.length === 0) {
-        return { clusters: [], totalCases: 0, totalUnsolved: 0, _debugSample: debugSample };
+        return { clusters: [], totalCases: 0, totalUnsolved: 0 };
       }
 
       const clusters = groupIntoClusters(
         data as unknown as HomicideRow[],
         filters.minClusterSize
       );
+      clusters.sort((a, b) => b.unsolved_cases - a.unsolved_cases);
 
       const totalCases = clusters.reduce((sum, c) => sum + c.total_cases, 0);
-      const totalUnsolved = clusters.reduce((sum, c) => sum + c.unsolved_cases, 0);
+      const totalUnsolved = clusters.reduce(
+        (sum, c) => sum + c.unsolved_cases,
+        0
+      );
 
-      return { clusters, totalCases, totalUnsolved, _debugSample: debugSample };
+      return { clusters, totalCases, totalUnsolved };
     } catch (err) {
       console.warn("[supabase] falling back to mock:", err);
     }
   }
 
-  // Fallback to mock data
-  try {
-    const filtered = MOCK_CLUSTERS.filter((c) => matchesFilters(c, filters));
-    const totalCases = filtered.reduce((sum, c) => sum + c.total_cases, 0);
-    const totalUnsolved = filtered.reduce((sum, c) => sum + c.unsolved_cases, 0);
-    return { clusters: filtered, totalCases, totalUnsolved };
-  } catch (err) {
-    console.error("[getClusters]", err);
-    return { clusters: [], totalCases: 0, totalUnsolved: 0, error: "Failed to load clusters" };
+  // Fallback to mock data — apply state + minClusterSize filters
+  let filtered = [...MOCK_CLUSTERS];
+  if (filters.state !== null) {
+    filtered = filtered.filter((c) => c.state === filters.state);
   }
+  filtered = filtered.filter((c) => c.total_cases >= filters.minClusterSize);
+  const totalCases = filtered.reduce((sum, c) => sum + c.total_cases, 0);
+  const totalUnsolved = filtered.reduce(
+    (sum, c) => sum + c.unsolved_cases,
+    0
+  );
+  return { clusters: filtered, totalCases, totalUnsolved };
 }
 
-/** Get a single cluster by ID (county_fips) */
+/** Get a single cluster by id (county_fips or mock id) */
 export async function getClusterById(
-  id: string
+  id: string,
+  filters: FilterState = DEFAULT_FILTERS
 ): Promise<{ cluster: Cluster | null; error?: string }> {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from("homicides")
-        .select("county_fips, state, solved, lat, lng, weapon_code, victim_sex, year, ori")
-        .eq("county_fips", id);
-
-      if (error) throw error;
-      if (!data || data.length === 0) {
-        // Fall through to mock
-      } else {
-        const clusters = groupIntoClusters(data as unknown as HomicideRow[], 1);
-        const cluster = clusters.find((c) => c.id === id) ?? null;
-        return { cluster };
-      }
-    } catch (err) {
-      console.warn("[supabase] falling back to mock:", err);
-    }
-  }
-
-  // Fallback to mock data
   try {
-    const cluster = MOCK_CLUSTERS.find((c) => c.id === id) ?? null;
+    const result = await getClusters({ ...filters, minClusterSize: 1 });
+    const cluster = result.clusters.find((c) => c.id === id) ?? null;
     return { cluster };
   } catch (err) {
     console.error("[getClusterById]", err);
@@ -267,41 +254,36 @@ export async function getClusterById(
   }
 }
 
-/** Get individual cases for a specific cluster */
+/** Get individual cases for a specific cluster (keyed by county_fips) */
 export async function getCasesForCluster(
-  clusterId: string
+  clusterId: string,
+  filters: FilterState = DEFAULT_FILTERS
 ): Promise<CaseResult> {
   if (supabase) {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("homicides")
         .select("*")
-        .eq("county_fips", clusterId);
+        .eq("county_fips", clusterId)
+        .order("year", { ascending: false });
 
+      query = applyFilters(query, filters);
+
+      const { data, error } = await query;
       if (error) throw error;
-      if (!data || data.length === 0) {
-        // Fall through to mock
-      } else {
-        const cases = (data as unknown as HomicideRow[]).map(rowToCase);
-        return { cases, total: cases.length };
-      }
+
+      const cases = (data as unknown as HomicideRow[]).map(rowToCase);
+      return { cases, total: cases.length };
     } catch (err) {
-      console.warn("[supabase] falling back to mock:", err);
+      console.warn("[supabase] getCasesForCluster falling back to mock:", err);
     }
   }
 
   // Fallback to mock data
-  try {
-    const cluster = MOCK_CLUSTERS.find((c) => c.id === clusterId);
-    if (!cluster) {
-      return { cases: [], total: 0 };
-    }
-    const cases = MOCK_CASES.filter((c) => c.county_fips === cluster.county_fips);
-    return { cases, total: cases.length };
-  } catch (err) {
-    console.error("[getCasesForCluster]", err);
-    return { cases: [], total: 0, error: "Failed to load cases" };
-  }
+  const cluster = MOCK_CLUSTERS.find((c) => c.id === clusterId);
+  const fips = cluster?.county_fips ?? clusterId;
+  const cases = MOCK_CASES.filter((c) => c.county_fips === fips);
+  return { cases, total: cases.length };
 }
 
 /** Get state reporting reliability badge */
@@ -317,33 +299,25 @@ export async function getStateReliability(
         .single();
 
       if (error) throw error;
-      if (!data) {
-        // Fall through to mock
-      } else {
-        const row = data as ReliabilityRow;
-        const reliability: ReliabilityBadge = {
-          state: row.state,
-          agencies_total: row.agencies_total,
-          agencies_reporting: row.agencies_reporting,
-          reporting_pct: row.reporting_pct,
-          confidence: getConfidenceLevel(row.reporting_pct),
-        };
-        return { reliability };
-      }
+      if (!data) return { reliability: null };
+
+      const row = data as ReliabilityRow;
+      const reliability: ReliabilityBadge = {
+        state: row.state,
+        agencies_total: row.agencies_total,
+        agencies_reporting: row.agencies_reporting,
+        reporting_pct: row.reporting_pct,
+        confidence: getConfidenceLevel(row.reporting_pct),
+      };
+      return { reliability };
     } catch (err) {
-      console.warn("[supabase] falling back to mock:", err);
+      console.warn("[supabase] getStateReliability falling back to mock:", err);
     }
   }
 
   // Fallback to mock data
-  try {
-    const reliability =
-      MOCK_STATE_RELIABILITY.find((r) => r.state === state) ?? null;
-    return { reliability };
-  } catch (err) {
-    console.error("[getStateReliability]", err);
-    return { reliability: null, error: "Failed to load reliability data" };
-  }
+  const mock = MOCK_STATE_RELIABILITY.find((r) => r.state === state) ?? null;
+  return { reliability: mock };
 }
 
 /** Get aggregate stats for current filter state */
@@ -363,11 +337,6 @@ export async function getStats(
     return { totalCases, totalUnsolved, clusterCount: clusters.length };
   } catch (err) {
     console.error("[getStats]", err);
-    return {
-      totalCases: 0,
-      totalUnsolved: 0,
-      clusterCount: 0,
-      error: "Failed to load stats",
-    };
+    return { totalCases: 0, totalUnsolved: 0, clusterCount: 0, error: "Failed to load stats" };
   }
 }

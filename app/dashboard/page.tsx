@@ -50,13 +50,12 @@ export default function DashboardPage() {
 
       if (result.error) {
         setError(result.error);
-        setDebugMsg(`[getClusters error] ${result.error} | ${result._debugSample ?? 'no sample'}`);
+        setDebugMsg(`[getClusters error] ${result.error}`);
         setClusters([]);
         setTotalCases(0);
         setTotalUnsolved(0);
       } else {
-        const src = result.clusters.length > 0 && result.clusters[0].id.match(/^\d{5}$/) ? "SUPABASE" : "MOCK";
-        setDebugMsg(`[getClusters OK] ${result.clusters.length} clusters, ${result.totalCases} cases (${src}) | ${result._debugSample ?? 'no sample'}`);
+        setDebugMsg(`[debug] clusters loaded: ${result.clusters.length}`);
         setClusters(result.clusters);
         setTotalCases(result.totalCases);
         setTotalUnsolved(result.totalUnsolved);
