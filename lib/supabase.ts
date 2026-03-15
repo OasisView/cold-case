@@ -42,10 +42,7 @@ function applyFilters(query: any, filters: FilterState): any {
     .lte("year", filters.dateRange[1]);
 
   if (filters.state !== null) query = query.eq("state", filters.state);
-  // DB stores "F"/"M" (raw SHR values)
-  if (filters.victimSex !== "all") {
-    query = query.eq("victim_sex", filters.victimSex === "Female" ? "F" : "M");
-  }
+  if (filters.victimSex !== "all") query = query.eq("victim_sex", filters.victimSex);
   if (filters.weaponType !== null) query = query.eq("weapon_code", filters.weaponType);
   if (filters.victimRace !== "all") {
     const dbRace = RACE_MAP[filters.victimRace] ?? filters.victimRace;
@@ -93,68 +90,6 @@ interface ReliabilityRow {
   reporting_pct: number;
 }
 
-/** Group homicide rows by state into Cluster objects.
- *  county_fips is NULL for all rows — state is the primary geographic identifier.
- *  lat/lng fall back to STATE_BOUNDS centers until geocoding provides real coords. */
-function groupIntoClusters(rows: HomicideRow[], minClusterSize: number): Cluster[] {
-  const groups = new Map<
-    string,
-    {
-      state: string;
-      total: number;
-      unsolved: number;
-      yearMin: number;
-      yearMax: number;
-      oris: Set<string>;
-    }
-  >();
-
-  for (const row of rows) {
-    const key = row.state ?? "Unknown";
-    let group = groups.get(key);
-    if (!group) {
-      group = {
-        state: row.state,
-        total: 0,
-        unsolved: 0,
-        yearMin: row.year,
-        yearMax: row.year,
-        oris: new Set<string>(),
-      };
-      groups.set(key, group);
-    }
-    group.total++;
-    if (!row.solved) group.unsolved++;
-    if (row.year < group.yearMin) group.yearMin = row.year;
-    if (row.year > group.yearMax) group.yearMax = row.year;
-    if (row.ori) group.oris.add(row.ori);
-  }
-
-  const clusters: Cluster[] = [];
-  for (const [state, g] of groups) {
-    if (g.total < minClusterSize) continue;
-    const bounds = STATE_BOUNDS[g.state];
-    const lat = bounds ? (bounds[1] + bounds[3]) / 2 : 39.5;
-    const lng = bounds ? (bounds[0] + bounds[2]) / 2 : -98.35;
-    clusters.push({
-      id: state,
-      name: state,
-      county_fips: state,
-      state,
-      total_cases: g.total,
-      unsolved_cases: g.unsolved,
-      solve_rate: g.total > 0 ? (g.total - g.unsolved) / g.total : 0,
-      lat,
-      lng,
-      year_start: g.yearMin,
-      year_end: g.yearMax,
-      jurisdictions: g.oris.size,
-    });
-  }
-
-  return clusters;
-}
-
 /** Map a homicide DB row to the Case type */
 function rowToCase(row: HomicideRow): Case {
   return {
@@ -187,53 +122,77 @@ function rowToCase(row: HomicideRow): Case {
 
 // ── Query Functions ──
 
-/** Get clusters matching filter criteria */
+interface StateClusterRow {
+  state: string;
+  total_cases: number;
+  unsolved_cases: number;
+  year_start: number;
+  year_end: number;
+  jurisdictions: number;
+}
+
+/** Get clusters matching filter criteria — uses server-side RPC to avoid 1k row limit */
 export async function getClusters(
   filters: FilterState
 ): Promise<ClusterResult> {
   if (supabase) {
     try {
-      let query = supabase
-        .from("homicides")
-        .select("state, solved, lat, lng, year, ori, county_fips");
+      const { data, error } = await supabase.rpc("get_state_clusters", {
+        p_year_start:  filters.dateRange[0],
+        p_year_end:    filters.dateRange[1],
+        p_victim_sex:  filters.victimSex !== "all" ? filters.victimSex : null,
+        p_weapon_code: filters.weaponType ?? null,
+        p_state:       filters.state ?? null,
+        p_victim_race: filters.victimRace !== "all"
+          ? (RACE_MAP[filters.victimRace] ?? filters.victimRace)
+          : null,
+        p_solved:      filters.solveStatus === "solved"   ? true
+                     : filters.solveStatus === "unsolved" ? false
+                     : null,
+      });
 
-      query = applyFilters(query, filters);
-
-      const { data, error } = await query;
       if (error) throw error;
       if (!data || data.length === 0) {
         return { clusters: [], totalCases: 0, totalUnsolved: 0 };
       }
 
-      const clusters = groupIntoClusters(
-        data as unknown as HomicideRow[],
-        filters.minClusterSize
-      );
-      clusters.sort((a, b) => b.unsolved_cases - a.unsolved_cases);
+      const clusters: Cluster[] = (data as StateClusterRow[])
+        .filter((r) => r.total_cases >= filters.minClusterSize)
+        .map((r) => {
+          const bounds = STATE_BOUNDS[r.state];
+          return {
+            id:             r.state,
+            name:           r.state,
+            county_fips:    r.state,
+            state:          r.state,
+            total_cases:    Number(r.total_cases),
+            unsolved_cases: Number(r.unsolved_cases),
+            solve_rate:     r.total_cases > 0
+              ? (r.total_cases - r.unsolved_cases) / r.total_cases
+              : 0,
+            lat:  bounds ? (bounds[1] + bounds[3]) / 2 : 39.5,
+            lng:  bounds ? (bounds[0] + bounds[2]) / 2 : -98.35,
+            year_start:   r.year_start,
+            year_end:     r.year_end,
+            jurisdictions: Number(r.jurisdictions),
+          };
+        })
+        .sort((a, b) => b.unsolved_cases - a.unsolved_cases);
 
-      const totalCases = clusters.reduce((sum, c) => sum + c.total_cases, 0);
-      const totalUnsolved = clusters.reduce(
-        (sum, c) => sum + c.unsolved_cases,
-        0
-      );
-
+      const totalCases    = clusters.reduce((s, c) => s + c.total_cases, 0);
+      const totalUnsolved = clusters.reduce((s, c) => s + c.unsolved_cases, 0);
       return { clusters, totalCases, totalUnsolved };
     } catch (err) {
-      console.warn("[supabase] falling back to mock:", err);
+      console.warn("[supabase] getClusters falling back to mock:", err);
     }
   }
 
-  // Fallback to mock data — apply state + minClusterSize filters
+  // Fallback to mock data
   let filtered = [...MOCK_CLUSTERS];
-  if (filters.state !== null) {
-    filtered = filtered.filter((c) => c.state === filters.state);
-  }
+  if (filters.state !== null) filtered = filtered.filter((c) => c.state === filters.state);
   filtered = filtered.filter((c) => c.total_cases >= filters.minClusterSize);
-  const totalCases = filtered.reduce((sum, c) => sum + c.total_cases, 0);
-  const totalUnsolved = filtered.reduce(
-    (sum, c) => sum + c.unsolved_cases,
-    0
-  );
+  const totalCases    = filtered.reduce((s, c) => s + c.total_cases, 0);
+  const totalUnsolved = filtered.reduce((s, c) => s + c.unsolved_cases, 0);
   return { clusters: filtered, totalCases, totalUnsolved };
 }
 
