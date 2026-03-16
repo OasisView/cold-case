@@ -9,7 +9,7 @@ import type {
   Case,
   ReliabilityBadge,
 } from "@/lib/types";
-import { getConfidenceLevel, STATE_BOUNDS, DEFAULT_FILTERS } from "@/lib/constants";
+import { getConfidenceLevel, STATE_CENTERS, DEFAULT_FILTERS } from "@/lib/constants";
 import {
   MOCK_CLUSTERS,
   MOCK_CASES,
@@ -168,8 +168,8 @@ export async function getClusters(
 
     const clusters: Cluster[] = (data as StateClusterRow[])
       .map((r) => {
-        const bounds = STATE_BOUNDS[r.state];
-        return {
+        const center = STATE_CENTERS[r.state];
+        const obj = {
           id:             r.state,
           name:           r.state,
           county_fips:    r.state,
@@ -179,12 +179,13 @@ export async function getClusters(
           solve_rate:     r.total_cases > 0
             ? (r.total_cases - r.unsolved_cases) / r.total_cases
             : 0,
-          lat:  bounds ? (bounds[1] + bounds[3]) / 2 : 39.5,
-          lng:  bounds ? (bounds[0] + bounds[2]) / 2 : -98.35,
+          lat:  center ? center[0] : 39.5,
+          lng:  center ? center[1] : -98.35,
           year_start:   r.year_start,
           year_end:     r.year_end,
           jurisdictions: Number(r.jurisdictions),
         };
+        return obj;
       })
       .sort((a, b) => b.unsolved_cases - a.unsolved_cases);
 

@@ -1,5 +1,6 @@
-// MapCanvas — Mapbox GL JS dark basemap, state boundary highlight, cluster markers, stats bar, reset view
+// MapCanvas — Mapbox GL JS dark basemap, state boundary highlight, GeoJSON cluster circles, stats bar, reset view
 // SSR disabled at page level via next/dynamic. Token from NEXT_PUBLIC_MAPBOX_TOKEN env var.
+/// <reference types="geojson" />
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
@@ -10,7 +11,6 @@ import type { Cluster } from "@/lib/types";
 import { useFilterStore } from "@/store/useFilterStore";
 import { STATE_BOUNDS, DEFAULT_MAP_VIEW } from "@/lib/constants";
 import StatsBar from "@/components/map/StatsBar";
-import HoverTooltip from "@/components/map/HoverTooltip";
 
 interface MapCanvasProps {
   clusters: Cluster[];
@@ -28,16 +28,11 @@ export default function MapCanvas({
   const router = useRouter();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const [tokenMissing, setTokenMissing] = useState(false);
   const [boundaryReady, setBoundaryReady] = useState(false);
 
   const setStateFilter = useFilterStore((s) => s.setStateFilter);
-
-  // Hover state — triggered by cluster marker mouseenter/mouseleave
-  const [hoveredCluster, setHoveredCluster] = useState<Cluster | null>(null);
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   const handleResetView = useCallback(() => {
     if (!mapRef.current) return;
@@ -65,8 +60,9 @@ export default function MapCanvas({
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [-98.5795, 39.8283],
-      zoom: 3.8,
+      center: [-96, 38],
+      zoom: 4,
+      projection: { name: "mercator" },
       attributionControl: false,
     });
 
@@ -76,6 +72,7 @@ export default function MapCanvas({
     );
 
     map.on("load", () => {
+      map.resize();
       setMapReady(true);
 
       // Fetch US state boundaries and add highlight layer
@@ -169,69 +166,74 @@ export default function MapCanvas({
     }
   }, [stateFilter, boundaryReady]);
 
-  // Render cluster markers on the map
+  // Render cluster circles via GeoJSON source + circle/symbol layers
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
 
-    // Remove previous markers
-    for (const m of markersRef.current) m.remove();
-    markersRef.current = [];
+    const geojson: GeoJSON.FeatureCollection = {
+      type: "FeatureCollection",
+      features: clusters.map((c) => ({
+        type: "Feature" as const,
+        geometry: {
+          type: "Point" as const,
+          coordinates: [c.lng, c.lat],
+        },
+        properties: {
+          id: c.id,
+          state: c.state,
+          unsolved: c.unsolved_cases,
+          total: c.total_cases,
+        },
+      })),
+    };
 
-    for (const cluster of clusters) {
-      // Outer circle container
-      const el = document.createElement("div");
-      el.style.cssText =
-        "width:64px;height:64px;border-radius:50%;background:rgba(200,16,46,0.15);" +
-        "border:1px solid rgba(200,16,46,0.4);display:flex;align-items:center;" +
-        "justify-content:center;cursor:pointer;position:relative;";
+    if (map.getSource("clusters")) {
+      (map.getSource("clusters") as mapboxgl.GeoJSONSource).setData(geojson);
+    } else {
+      map.addSource("clusters", { type: "geojson", data: geojson });
 
-      // Inner circle
-      const inner = document.createElement("div");
-      inner.style.cssText =
-        "width:44px;height:44px;border-radius:50%;background:rgba(200,16,46,0.35);" +
-        "border:1.5px solid #C8102E;display:flex;align-items:center;justify-content:center;";
-
-      // Unsolved count label
-      const label = document.createElement("span");
-      label.textContent = String(cluster.unsolved_cases);
-      label.style.cssText =
-        "font-family:var(--font-display),sans-serif;font-size:14px;color:#F0F2F5;" +
-        "line-height:1;letter-spacing:1px;";
-      inner.appendChild(label);
-      el.appendChild(inner);
-
-      // Name label below circle
-      const name = document.createElement("div");
-      name.textContent = cluster.name;
-      name.style.cssText =
-        "position:absolute;top:68px;left:50%;transform:translateX(-50%);" +
-        "font-family:var(--font-mono),monospace;font-size:8px;color:#8A929F;" +
-        "white-space:nowrap;letter-spacing:1px;pointer-events:none;";
-      el.appendChild(name);
-
-      // Click → navigate to case file
-      const clusterId = cluster.id;
-      el.addEventListener("click", () => {
-        router.push(`/cluster/${clusterId}`);
+      map.addLayer({
+        id: "cluster-circles",
+        type: "circle",
+        source: "clusters",
+        paint: {
+          "circle-radius": 24,
+          "circle-color": "rgba(200, 16, 46, 0.85)",
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "#C8102E",
+          "circle-opacity": 0.9,
+        },
       });
 
-      // Hover tooltip
-      el.addEventListener("mouseenter", (e) => {
-        setHoveredCluster(cluster);
-        setTooltipPos({ x: e.clientX, y: e.clientY });
-      });
-      el.addEventListener("mousemove", (e) => {
-        setTooltipPos({ x: e.clientX, y: e.clientY });
-      });
-      el.addEventListener("mouseleave", () => {
-        setHoveredCluster(null);
+      map.addLayer({
+        id: "cluster-labels",
+        type: "symbol",
+        source: "clusters",
+        layout: {
+          "text-field": ["get", "unsolved"],
+          "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"],
+          "text-size": 13,
+          "text-allow-overlap": true,
+        },
+        paint: {
+          "text-color": "#ffffff",
+        },
       });
 
-      const marker = new mapboxgl.Marker({ element: el, anchor: "center" })
-        .setLngLat([cluster.lng, cluster.lat])
-        .addTo(mapRef.current!);
+      map.on("click", "cluster-circles", (e) => {
+        if (!e.features?.[0]) return;
+        const id = e.features[0].properties?.id;
+        if (id) router.push(`/cluster/${id}`);
+      });
 
-      markersRef.current.push(marker);
+      map.on("mouseenter", "cluster-circles", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+
+      map.on("mouseleave", "cluster-circles", () => {
+        map.getCanvas().style.cursor = "";
+      });
     }
   }, [clusters, mapReady, router]);
 
@@ -262,14 +264,14 @@ export default function MapCanvas({
 
   return (
     <div
-      className="relative flex-1 overflow-hidden"
-      style={{ height: "100%", width: "100%" }}
+      className="overflow-hidden"
+      style={{ position: "relative", flex: 1, height: "100%" }}
       data-testid="map-container"
     >
       {/* Mapbox container */}
       <div
         ref={mapContainerRef}
-        style={{ height: "100%", width: "100%" }}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
       />
 
       {/* Stats bar — floating top-right overlay */}
@@ -278,13 +280,6 @@ export default function MapCanvas({
         totalUnsolved={totalUnsolved}
         clusterCount={clusters.length}
         loading={loading}
-      />
-
-      {/* Hover tooltip — follows cursor on cluster marker hover */}
-      <HoverTooltip
-        cluster={hoveredCluster}
-        x={tooltipPos.x}
-        y={tooltipPos.y}
       />
 
       {/* Reset View — isolated circular cluster-node button, bottom-right */}
