@@ -171,9 +171,11 @@ export default function MapCanvas({
     if (!mapReady || !mapRef.current) return;
     const map = mapRef.current;
 
+    const validClusters = clusters.filter((c) => c.total_cases > 0);
+
     const geojson: GeoJSON.FeatureCollection = {
       type: "FeatureCollection",
-      features: clusters.map((c) => ({
+      features: validClusters.map((c) => ({
         type: "Feature" as const,
         geometry: {
           type: "Point" as const,
@@ -211,7 +213,7 @@ export default function MapCanvas({
         type: "symbol",
         source: "clusters",
         layout: {
-          "text-field": ["get", "unsolved"],
+          "text-field": ["to-string", ["get", "total"]],
           "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"],
           "text-size": 13,
           "text-allow-overlap": true,

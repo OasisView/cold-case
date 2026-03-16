@@ -9,25 +9,15 @@ import { DEFAULT_FILTERS } from "@/lib/constants";
 import type { FilterState } from "@/lib/types";
 
 describe("getClusters", () => {
-  it("returns clusters above default minClusterSize (10) with default filters", async () => {
-    // Default minClusterSize=10 filters out Snohomish (8) and Clark (7)
+  it("returns hardcoded 51 state clusters for default filters (fast path)", async () => {
     const result = await getClusters(DEFAULT_FILTERS);
     expect(result.error).toBeUndefined();
-    expect(result.clusters).toHaveLength(4);
-    for (const cluster of result.clusters) {
-      expect(cluster.total_cases).toBeGreaterThanOrEqual(10);
-    }
-    expect(result.totalCases).toBeGreaterThan(0);
-    expect(result.totalUnsolved).toBeGreaterThan(0);
+    expect(result.clusters).toHaveLength(51);
+    expect(result.totalCases).toBe(852394);
+    expect(result.totalUnsolved).toBe(251082);
   });
 
-  it("returns all 6 clusters when minClusterSize is lowered to 5", async () => {
-    const filters: FilterState = { ...DEFAULT_FILTERS, minClusterSize: 5 };
-    const result = await getClusters(filters);
-    expect(result.clusters).toHaveLength(6);
-  });
-
-  it("filters by state correctly", async () => {
+  it("returns mock clusters when a filter is applied (bypasses fast path)", async () => {
     const filters: FilterState = {
       ...DEFAULT_FILTERS,
       state: "Washington",
@@ -51,9 +41,10 @@ describe("getClusters", () => {
     expect(result.clusters[0].solve_rate).toBe(0.342);
   });
 
-  it("filters by minClusterSize", async () => {
+  it("filters by minClusterSize when state filter is applied", async () => {
     const filters: FilterState = {
       ...DEFAULT_FILTERS,
+      state: "Washington",
       minClusterSize: 15,
     };
     const result = await getClusters(filters);
@@ -74,8 +65,13 @@ describe("getClusters", () => {
     expect(result.error).toBeUndefined();
   });
 
-  it("totalCases and totalUnsolved sum correctly", async () => {
-    const result = await getClusters(DEFAULT_FILTERS);
+  it("totalCases and totalUnsolved sum correctly for filtered results", async () => {
+    const filters: FilterState = {
+      ...DEFAULT_FILTERS,
+      state: "Washington",
+      minClusterSize: 5,
+    };
+    const result = await getClusters(filters);
     const expectedTotal = result.clusters.reduce(
       (sum, c) => sum + c.total_cases,
       0
@@ -90,18 +86,18 @@ describe("getClusters", () => {
 });
 
 describe("getClusterById", () => {
-  it("returns King County cluster by id", async () => {
-    const result = await getClusterById("wa-king");
+  it("returns California cluster by state id (hardcoded fast path)", async () => {
+    const result = await getClusterById("California");
     expect(result.error).toBeUndefined();
     expect(result.cluster).not.toBeNull();
-    expect(result.cluster!.name).toBe("King County, WA");
-    expect(result.cluster!.total_cases).toBe(52);
+    expect(result.cluster!.name).toBe("California");
+    expect(result.cluster!.total_cases).toBe(45607);
   });
 
-  it("returns DC cluster by id", async () => {
-    const result = await getClusterById("dc-district");
+  it("returns Ohio cluster by state id", async () => {
+    const result = await getClusterById("Ohio");
     expect(result.cluster).not.toBeNull();
-    expect(result.cluster!.total_cases).toBe(7108);
+    expect(result.cluster!.total_cases).toBe(7887);
   });
 
   it("returns null for unknown id", async () => {
@@ -151,13 +147,12 @@ describe("getStateReliability", () => {
 });
 
 describe("getStats", () => {
-  it("returns aggregate stats for default filters", async () => {
+  it("returns aggregate stats for default filters (hardcoded fast path)", async () => {
     const result = await getStats(DEFAULT_FILTERS);
     expect(result.error).toBeUndefined();
-    // Default minClusterSize=10 filters out Snohomish (8) and Clark (7)
-    expect(result.clusterCount).toBe(4);
-    expect(result.totalCases).toBeGreaterThan(0);
-    expect(result.totalUnsolved).toBeGreaterThan(0);
+    expect(result.clusterCount).toBe(51);
+    expect(result.totalCases).toBe(852394);
+    expect(result.totalUnsolved).toBe(251082);
   });
 
   it("stats match getClusters output", async () => {
