@@ -20,7 +20,7 @@ export default function FilterSelect({
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const dropdownPosRef = useRef({ top: 0, left: 0, width: 0 });
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
 
   const selectedOption = options.find((o) => o.value === value);
 
@@ -64,7 +64,9 @@ export default function FilterSelect({
   useEffect(() => {
     if (isOpen) {
       const currentIndex = options.findIndex((o) => o.value === value);
-      setFocusedIndex(currentIndex >= 0 ? currentIndex : 0);
+      Promise.resolve().then(() =>
+        setFocusedIndex(currentIndex >= 0 ? currentIndex : 0)
+      );
     }
   }, [isOpen, options, value]);
 
@@ -79,11 +81,11 @@ export default function FilterSelect({
           e.preventDefault();
           if (triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect();
-            dropdownPosRef.current = {
+            setDropdownPos({
               top: rect.bottom + 2,
               left: rect.left,
               width: rect.width,
-            };
+            });
           }
           setIsOpen(true);
         }
@@ -114,7 +116,7 @@ export default function FilterSelect({
           break;
       }
     },
-    [isOpen, focusedIndex, options, onChange]
+    [isOpen, focusedIndex, options, onChange, setDropdownPos]
   );
 
   return (
@@ -136,11 +138,11 @@ export default function FilterSelect({
           onClick={() => {
             if (!isOpen && triggerRef.current) {
               const rect = triggerRef.current.getBoundingClientRect();
-              dropdownPosRef.current = {
+              setDropdownPos({
                 top: rect.bottom + 2,
                 left: rect.left,
                 width: rect.width,
-              };
+              });
             }
             setIsOpen(!isOpen);
           }}
@@ -153,6 +155,7 @@ export default function FilterSelect({
           }}
           role="combobox"
           aria-expanded={isOpen}
+          aria-controls={`${label.replace(/\s+/g, "-").toLowerCase()}-listbox`}
           aria-haspopup="listbox"
         >
           <span>{selectedOption?.label ?? ""}</span>
@@ -179,14 +182,15 @@ export default function FilterSelect({
             className="bg-bg3 border border-border"
             style={{
               position: "fixed",
-              top: dropdownPosRef.current.top,
-              left: dropdownPosRef.current.left,
-              width: dropdownPosRef.current.width,
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+              width: dropdownPos.width,
               zIndex: 50,
               borderRadius: "2px",
               maxHeight: "240px",
               overflowY: "auto",
             }}
+            id={`${label.replace(/\s+/g, "-").toLowerCase()}-listbox`}
             role="listbox"
           >
             {options.map((opt, i) => {

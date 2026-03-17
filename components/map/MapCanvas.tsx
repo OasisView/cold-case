@@ -49,7 +49,7 @@ export default function MapCanvas({
   useEffect(() => {
     const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
     if (!token) {
-      setTokenMissing(true);
+      Promise.resolve().then(() => setTokenMissing(true));
       return;
     }
 
