@@ -34,6 +34,10 @@ export default function CaseFilePage() {
 
       if (cancelled) return;
 
+      console.log('[casefile] id:', id);
+      console.log('[casefile] cluster:', clusterResult.cluster);
+      console.log('[casefile] cases count:', caseResult.cases.length);
+
       if (clusterResult.error) {
         setError(clusterResult.error);
         setLoading(false);
